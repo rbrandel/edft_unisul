@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maturidade Digital 360º | Assessment Executivo</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6', // Teal
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        corporate: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Oculta scrollbar mas mantém funcionalidade */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Estilos de Impressão */
+        @media print {
+            body { background-color: #ffffff; color: #000000; }
+            .no-print, #form-section { display: none !important; }
+            .print-break { page-break-before: always; }
+            #dashboard-section { display: block !important; }
+            .glass-card { 
+                box-shadow: none !important; 
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                page-break-inside: avoid;
+            }
+            .text-white { color: #0f172a !important; }
+            .bg-corporate { background-color: #ffffff !important; color: #0f172a !important; border-bottom: 2px solid #0f172a;}
+            canvas { max-width: 100% !important; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Executivo -->
+    <header class="bg-corporate text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-brand-600 rounded-lg shadow-inner">
+                    <i class="fa-solid fa-chart-pie text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Maturidade Digital 360º</h1>
+                    <p class="text-xs text-slate-300">Assessment de Nuvem, ERP, IA e Governança</p>
+                </div>
+            </div>
+            <div class="flex gap-3 text-sm no-print">
+                <span class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    <i class="fa-solid fa-lock text-brand-500"></i> Local & Privado
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Formulário Section -->
+        <section id="form-section" class="space-y-6">
+            <div class="text-center max-w-3xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold text-corporate mb-4">Diagnóstico de <span class="text-brand-600">Transformação Digital</span></h2>
+                <p class="text-slate-600">Responda ao questionário executivo abaixo para calcular o Índice de Prontidão Digital da sua empresa e receber um plano de ação estratégico personalizado.</p>
+            </div>
+
+            <form id="assessmentForm" class="space-y-8">
+                
+                <!-- Dados da Empresa -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 text-corporate">
+                        <i class="fa-solid fa-building text-brand-600"></i> Informações Corporativas
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Empresa</label>
+                            <input type="text" id="empresa" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Setor / Indústria</label>
+                            <input type="text" id="setor" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Porte</label>
+                            <select id="porte" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Micro/Pequena (1-49)">Micro/Pequena (1-49)</option>
+                                <option value="Média (50-249)">Média (50-249)</option>
+                                <option value="Grande (250+)">Grande (250+)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilar 1: Nuvem -->
+                <div class="glass-card rounded-xl p-6 border-l-4 border-l-blue-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 text-corporate">
+                        <i class="fa-solid fa-cloud text-blue-500"></i> Pilar 1: Infraestrutura & Nuvem
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">1. Onde estão hospedados seus principais sistemas (ERP, arquivos)?</label>
+                            <select id="p1_q1" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Servidor físico local antigo / Computadores individuais</option>
+                                <option value="7.5">Servidor local moderno ou nuvem muito básica / Data Center terceirizado</option>
+                                <option value="15">Nuvem estruturada (AWS, Azure, Google) ou 100% SaaS</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">2. Como é gerido o Backup e a Continuidade do Negócio?</label>
+                            <select id="p1_q2" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Não há rotina clara ou é feito manualmente (ex: HD Externo)</option>
+                                <option value="5">Backup diário, mas sem plano formal de Disaster Recovery</option>
+                                <option value="10">Regra 3-2-1 aplicada, com redundância e plano de recuperação testado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilar 2: ERP e Dados -->
+                <div class="glass-card rounded-xl p-6 border-l-4 border-l-emerald-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 text-corporate">
+                        <i class="fa-solid fa-network-wired text-emerald-500"></i> Pilar 2: Sistemas & Fluxo de Dados
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">3. Como a empresa gerencia operações, finanças e vendas?</label>
+                            <select id="p2_q1" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Controle baseado em planilhas soltas, papéis e e-mails</option>
+                                <option value="7.5">Uso de sistemas variados não integrados (ERP separado do CRM)</option>
+                                <option value="15">Sistemas modernos (ERP/CRM) integrados com base de dados única</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">4. Qual o nível de confiança e tempo para gerar relatórios gerenciais?</label>
+                            <select id="p2_q2" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Dados manuais, alto esforço, risco de erro e lentidão</option>
+                                <option value="5">Dados extraídos do sistema, mas trabalhados manualmente no Excel</option>
+                                <option value="10">Dashboards automáticos em tempo real (Power BI, Tableau, etc.)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilar 3: IA e Automação -->
+                <div class="glass-card rounded-xl p-6 border-l-4 border-l-purple-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 text-corporate">
+                        <i class="fa-solid fa-robot text-purple-500"></i> Pilar 3: IA & Automação No-Code
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">5. Qual o nível de uso de Inteligência Artificial na empresa?</label>
+                            <select id="p3_q1" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Não utilizamos IA em nenhum processo documentado</option>
+                                <option value="7.5">Uso pontual/informal por alguns funcionários (ex: ChatGPT livre)</option>
+                                <option value="15">IA integrada aos processos, com licenças e políticas (Copilot, Gemini, APIs)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">6. Como são tratadas as tarefas repetitivas e integrações diárias?</label>
+                            <select id="p3_q2" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">100% manuais (digitação dupla, copiar/colar)</option>
+                                <option value="5">Algumas macros em planilhas ou importações esporádicas</option>
+                                <option value="10">Automações ativas (Make, Zapier, n8n, RPA) rodando em background</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilar 4: Governança e Segurança -->
+                <div class="glass-card rounded-xl p-6 border-l-4 border-l-rose-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 text-corporate">
+                        <i class="fa-solid fa-shield-halved text-rose-500"></i> Pilar 4: Governança & Segurança
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">7. Como é feito o controle de acesso e identidade digital?</label>
+                            <select id="p4_q1" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Senhas fracas, contas genéricas ou compartilhadas, sem auditoria</option>
+                                <option value="7.5">Contas individuais, mas sem exigência de Duplo Fator (MFA)</option>
+                                <option value="15">MFA obrigatório, SSO, e controle rígido de quem acessa o quê (IAM)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">8. Qual o status de conformidade com a LGPD e privacidade?</label>
+                            <select id="p4_q2" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500 outline-none">
+                                <option value="" disabled selected>Selecione a situação atual...</option>
+                                <option value="0">Nenhuma iniciativa de adequação à LGPD ou política de privacidade</option>
+                                <option value="5">Iniciativas em andamento, alguns documentos, mas pouca prática real</option>
+                                <option value="10">Adequação completa, políticas ativas, treinamentos regulares de phishing</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                    <button type="button" onclick="carregarDemo()" class="px-6 py-3 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2 w-full sm:w-auto">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> Carregar Caso Exemplo (Demo)
+                    </button>
+                    <button type="submit" class="px-8 py-3 rounded-lg font-bold bg-brand-600 hover:bg-brand-700 text-white transition-all shadow-lg flex items-center gap-2 w-full sm:w-auto transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-microchip"></i> Gerar Laudo Técnico 360º
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Dashboard de Resultados -->
+        <section id="dashboard-section" class="hidden mt-8 space-y-8 animate-fade-in pb-12">
+            
+            <!-- Header do Relatório -->
+            <div class="flex flex-col md:flex-row justify-between items-end border-b border-slate-300 pb-4 mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-corporate">Laudo Técnico Executivo</h2>
+                    <p class="text-slate-500 mt-1">Diagnóstico gerado para: <strong id="out-empresa" class="text-slate-800"></strong> | <span id="out-setor"></span></p>
+                </div>
+                <div class="flex gap-3 mt-4 md:mt-0 no-print">
+                    <button onclick="limparFormulario()" class="px-4 py-2 rounded-lg font-medium bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Novo
+                    </button>
+                    <button onclick="window.print()" class="px-5 py-2 rounded-lg font-medium bg-corporate hover:bg-slate-800 text-white transition-colors flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-print"></i> Exportar PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Principal e Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Score Card Principal -->
+                <div class="glass-card p-8 rounded-2xl flex flex-col items-center justify-center text-center lg:col-span-1 shadow-lg bg-gradient-to-b from-white to-slate-50">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Índice de Maturidade</h3>
+                    <div class="relative">
+                        <svg class="w-40 h-40 transform -rotate-90">
+                            <circle cx="80" cy="80" r="70" stroke="#e2e8f0" stroke-width="12" fill="none" />
+                            <circle id="score-circle" cx="80" cy="80" r="70" stroke="#14b8a6" stroke-width="12" fill="none" stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                            <span id="score-text" class="text-5xl font-black text-corporate">0%</span>
+                        </div>
+                    </div>
+                    <div id="badge-container" class="mt-6 px-5 py-2 rounded-full font-bold text-sm border inline-flex items-center gap-2">
+                        <!-- Preenchido via JS -->
+                    </div>
+                    <p id="badge-desc" class="text-xs text-slate-500 mt-3"></p>
+                </div>
+
+                <!-- Cards dos 4 Pilares -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- P1 -->
+                    <div class="glass-card p-5 rounded-xl border-l-4 border-l-blue-500 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <i class="fa-solid fa-cloud text-blue-500 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-corporate text-sm">Infra e Nuvem</h4>
+                            </div>
+                            <span id="score-p1" class="text-2xl font-black text-blue-600">0</span><span class="text-xs text-slate-400 mt-2">/25</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="bar-p1" class="bg-blue-500 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                    <!-- P2 -->
+                    <div class="glass-card p-5 rounded-xl border-l-4 border-l-emerald-500 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <i class="fa-solid fa-network-wired text-emerald-500 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-corporate text-sm">Sistemas & Dados</h4>
+                            </div>
+                            <span id="score-p2" class="text-2xl font-black text-emerald-600">0</span><span class="text-xs text-slate-400 mt-2">/25</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="bar-p2" class="bg-emerald-500 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                    <!-- P3 -->
+                    <div class="glass-card p-5 rounded-xl border-l-4 border-l-purple-500 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <i class="fa-solid fa-robot text-purple-500 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-corporate text-sm">IA & Automação</h4>
+                            </div>
+                            <span id="score-p3" class="text-2xl font-black text-purple-600">0</span><span class="text-xs text-slate-400 mt-2">/25</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="bar-p3" class="bg-purple-500 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                    <!-- P4 -->
+                    <div class="glass-card p-5 rounded-xl border-l-4 border-l-rose-500 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <i class="fa-solid fa-shield-halved text-rose-500 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-corporate text-sm">Gov. & Segurança</h4>
+                            </div>
+                            <span id="score-p4" class="text-2xl font-black text-rose-600">0</span><span class="text-xs text-slate-400 mt-2">/25</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="bar-p4" class="bg-rose-500 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Radar e Plano de Ação -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4 print-break">
+                
+                <!-- Radar Chart -->
+                <div class="glass-card p-6 rounded-xl flex flex-col items-center justify-start lg:col-span-1">
+                    <h4 class="text-lg font-bold mb-2 text-corporate w-full border-b pb-2">Distribuição Estratégica</h4>
+                    <p class="text-xs text-slate-500 mb-4 text-center w-full">Visualização do equilíbrio entre os pilares</p>
+                    <div class="w-full relative h-64 md:h-72">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plano de Ação -->
+                <div class="glass-card p-8 rounded-xl lg:col-span-2">
+                    <h3 class="text-2xl font-bold text-corporate mb-6 flex items-center gap-3 border-b pb-3">
+                        <i class="fa-solid fa-list-check text-brand-600"></i> Plano de Boas Práticas do Especialista
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Ação P1 -->
+                        <div class="relative pl-6 border-l-2 border-blue-200">
+                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white"></div>
+                            <h5 class="text-md font-bold text-blue-700 mb-1">1. Nuvem & Infraestrutura</h5>
+                            <p id="plan-p1" class="text-sm text-slate-700 leading-relaxed bg-blue-50/50 p-3 rounded-r-lg border border-blue-100"></p>
+                        </div>
+                        
+                        <!-- Ação P2 -->
+                        <div class="relative pl-6 border-l-2 border-emerald-200">
+                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-white"></div>
+                            <h5 class="text-md font-bold text-emerald-700 mb-1">2. ERP & Fluxo de Dados</h5>
+                            <p id="plan-p2" class="text-sm text-slate-700 leading-relaxed bg-emerald-50/50 p-3 rounded-r-lg border border-emerald-100"></p>
+                        </div>
+
+                        <!-- Ação P3 -->
+                        <div class="relative pl-6 border-l-2 border-purple-200">
+                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-purple-500 ring-4 ring-white"></div>
+                            <h5 class="text-md font-bold text-purple-700 mb-1">3. IA & Automação</h5>
+                            <p id="plan-p3" class="text-sm text-slate-700 leading-relaxed bg-purple-50/50 p-3 rounded-r-lg border border-purple-100"></p>
+                        </div>
+
+                        <!-- Ação P4 -->
+                        <div class="relative pl-6 border-l-2 border-rose-200">
+                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-rose-500 ring-4 ring-white"></div>
+                            <h5 class="text-md font-bold text-rose-700 mb-1">4. Governança & Segurança</h5>
+                            <p id="plan-p4" class="text-sm text-slate-700 leading-relaxed bg-rose-50/50 p-3 rounded-r-lg border border-rose-100"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-corporate border-t border-slate-800 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
+            <p class="font-semibold text-slate-200 mb-2">Maturidade Digital 360º ®</p>
+            <p class="mb-4">Desenvolvido por especialistas em Transformação Digital, Infraestrutura em Nuvem e Sistemas Empresariais.</p>
+            <div class="mt-4 flex justify-center items-center gap-2 text-xs bg-slate-800/50 inline-block px-4 py-2 rounded-lg border border-slate-700">
+                <i class="fa-solid fa-shield-check text-brand-500"></i> Privacy by Design (LGPD): Todos os cálculos são processados localmente no seu navegador. Nenhum dado é enviado a servidores externos.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts JavaScript -->
+    <script>
+        // Configuração do Chart.js
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+        let radarChartInstance = null;
+
+        // Função de Avaliação e Renderização
+        document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Coletar Dados
+            const empresa = document.getElementById('empresa').value;
+            const setor = document.getElementById('setor').value;
+            const p1 = parseFloat(document.getElementById('p1_q1').value) + parseFloat(document.getElementById('p1_q2').value); // Max 25
+            const p2 = parseFloat(document.getElementById('p2_q1').value) + parseFloat(document.getElementById('p2_q2').value); // Max 25
+            const p3 = parseFloat(document.getElementById('p3_q1').value) + parseFloat(document.getElementById('p3_q2').value); // Max 25
+            const p4 = parseFloat(document.getElementById('p4_q1').value) + parseFloat(document.getElementById('p4_q2').value); // Max 25
+            
+            const totalScore = p1 + p2 + p3 + p4;
+
+            // Preencher UI
+            document.getElementById('out-empresa').innerText = empresa;
+            document.getElementById('out-setor').innerText = setor;
+            
+            // Animar Score Circular
+            document.getElementById('score-text').innerText = `${totalScore}%`;
+            const circle = document.getElementById('score-circle');
+            const circumference = 440; // 2 * pi * r (r=70) = ~440
+            const offset = circumference - (totalScore / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            // Ajustar cor do círculo dependendo da nota
+            let themeColor = '#14b8a6'; // default teal
+            if(totalScore < 40) themeColor = '#ef4444'; // red
+            else if(totalScore < 60) themeColor = '#f59e0b'; // amber
+            circle.style.stroke = themeColor;
+
+            // Classificação (Badge)
+            const badgeContainer = document.getElementById('badge-container');
+            const badgeDesc = document.getElementById('badge-desc');
+            
+            if (totalScore < 40) {
+                badgeContainer.className = "mt-6 px-5 py-2 rounded-full font-bold text-sm border inline-flex items-center gap-2 bg-red-50 text-red-700 border-red-200";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Estágio: Iniciante / Crítico';
+                badgeDesc.innerText = "Altíssimo risco de disrupção, ineficiência e perda de dados.";
+            } else if (totalScore < 70) {
+                badgeContainer.className = "mt-6 px-5 py-2 rounded-full font-bold text-sm border inline-flex items-center gap-2 bg-amber-50 text-amber-700 border-amber-200";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-signs-post"></i> Estágio: Em Transição';
+                badgeDesc.innerText = "Iniciativas isoladas, mas falta integração e visão sistêmica.";
+            } else if (totalScore < 90) {
+                badgeContainer.className = "mt-6 px-5 py-2 rounded-full font-bold text-sm border inline-flex items-center gap-2 bg-blue-50 text-blue-700 border-blue-200";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-check-double"></i> Estágio: Conectada / Estruturada';
+                badgeDesc.innerText = "Operação sólida, segura e pronta para escalar com inovação.";
+            } else {
+                badgeContainer.className = "mt-6 px-5 py-2 rounded-full font-bold text-sm border inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 border-emerald-200";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-crown"></i> Estágio: Líder Digital';
+                badgeDesc.innerText = "Empresa referência em tecnologia, orientada a dados e inovação constante.";
+            }
+
+            // Atualizar Cards dos Pilares (Valor e Barras)
+            document.getElementById('score-p1').innerText = p1;
+            document.getElementById('bar-p1').style.width = `${(p1/25)*100}%`;
+            
+            document.getElementById('score-p2').innerText = p2;
+            document.getElementById('bar-p2').style.width = `${(p2/25)*100}%`;
+            
+            document.getElementById('score-p3').innerText = p3;
+            document.getElementById('bar-p3').style.width = `${(p3/25)*100}%`;
+            
+            document.getElementById('score-p4').innerText = p4;
+            document.getElementById('bar-p4').style.width = `${(p4/25)*100}%`;
+
+            // Gerar Plano de Ação Dinâmico
+            gerarPlanoAcao(p1, p2, p3, p4);
+
+            // Gerar Gráfico Radar
+            desenharGrafico(p1, p2, p3, p4);
+
+            // Exibir Dashboard
+            const dash = document.getElementById('dashboard-section');
+            dash.classList.remove('hidden');
+            
+            setTimeout(() => {
+                dash.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+
+        // Função de Geração de Textos do Plano
+        function gerarPlanoAcao(p1, p2, p3, p4) {
+            // P1: Nuvem
+            let txtP1 = "";
+            if(p1 < 10) txtP1 = "<strong>Urgência Arquitetural:</strong> A dependência de hardware local obsoleto cria um gargalo crítico. Inicie o mapeamento (Assessment) da sua infraestrutura atual para planejar uma migração faseada (IaaS), priorizando o estabelecimento de rotinas de backup 3-2-1 em nuvem externa imediatamente.";
+            else if(p1 < 20) txtP1 = "<strong>Otimização de Nuvem:</strong> O ambiente básico já existe, mas requer refinamento. Estruture um plano de Disaster Recovery (DR) testável e considere migrar aplicações tradicionais para modelos PaaS ou SaaS, reduzindo o custo de manutenção e aumentando a resiliência.";
+            else txtP1 = "<strong>Evolução e FinOps:</strong> Infraestrutura excelente. O foco deve ser a otimização de custos de nuvem (FinOps), adoção de arquiteturas Serverless/Microserviços onde aplicável e monitoramento preditivo para alta disponibilidade contínua.";
+            document.getElementById('plan-p1').innerHTML = txtP1;
+
+            // P2: ERP
+            let txtP2 = "";
+            if(p2 < 10) txtP2 = "<strong>Fim dos Silos:</strong> O uso excessivo de planilhas e processos manuais gera dados não confiáveis. É vital iniciar a contratação e implantação de um ERP centralizado para unificar as áreas de finanças, estoque e vendas, garantindo uma única 'versão da verdade'.";
+            else if(p2 < 20) txtP2 = "<strong>Integração de Dados:</strong> O sistema atual gera relatórios, mas não de forma fluida. O próximo passo é integrar o ERP ao CRM via APIs (eliminando trabalho dobrado) e implementar uma ferramenta de Business Intelligence (BI) para gerar dashboards dinâmicos aos gestores.";
+            else txtP2 = "<strong>Inteligência de Negócios:</strong> Fluxo de dados maduro. A recomendação é explorar análises preditivas dentro do BI, conectar dados externos (mercado/concorrência) ao Data Warehouse da empresa e melhorar a experiência do cliente através do ecossistema já integrado.";
+            document.getElementById('plan-p2').innerHTML = txtP2;
+
+            // P3: IA e Automação
+            let txtP3 = "";
+            if(p3 < 10) txtP3 = "<strong>Alfabetização em IA:</strong> O trabalho manual consome horas valiosas. Comece mapeando processos repetitivos (cadastros, conciliações) e implemente automações simples com ferramentas no-code (Zapier/Make). Conduza workshops básicos de IA generativa (ChatGPT) para a equipe.";
+            else if(p3 < 20) txtP3 = "<strong>Escalando a Produtividade:</strong> Adote licenças corporativas seguras para IA (Microsoft Copilot ou Google Gemini) integradas às ferramentas de trabalho. Evolua as automações no-code conectando o CRM e o ERP para ações que rodam 100% em background (ex: onboarding de clientes).";
+            else txtP3 = "<strong>Inovação com IA Própria:</strong> Estágio avançado. Explore a criação de Agentes de IA customizados integrados ao banco de dados da empresa para suporte a vendas/clientes, e mapeie fluxos complexos para soluções robustas de Hyperautomation.";
+            document.getElementById('plan-p3').innerHTML = txtP3;
+
+            // P4: Segurança
+            let txtP4 = "";
+            if(p4 < 10) txtP4 = "<strong>Gestão de Risco Imediata:</strong> Risco altíssimo de vazamento ou ransomware. Ative o Duplo Fator de Autenticação (MFA) obrigatório para todas as contas corporativas de forma urgente. Inicie formalmente um comitê para mapeamento de dados visando o compliance com a LGPD.";
+            else if(p4 < 20) txtP4 = "<strong>Governança Ativa:</strong> As bases de segurança existem. O próximo passo é unificar os acessos via SSO (Single Sign-On), aplicar o princípio do 'Menor Privilégio', elaborar as Políticas de Privacidade visíveis e treinar os colaboradores contra engenharia social e uso indevido de IA corporativa.";
+            else txtP4 = "<strong>Segurança by Design:</strong> Maturidade alta. Mantenha testes regulares de invasão (Pentest), auditorias contínuas de gestão de identidade e certifique-se de que fornecedores terceiros sigam os mesmos padrões rigorosos de proteção de dados que sua empresa aplica.";
+            document.getElementById('plan-p4').innerHTML = txtP4;
+        }
+
+        // Função do Gráfico
+        function desenharGrafico(p1, p2, p3, p4) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if(radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Infra & Nuvem', 
+                        'Sistemas & Dados', 
+                        'IA & Automação', 
+                        'Segurança & Gov.'
+                    ],
+                    datasets: [{
+                        label: 'Pontuação (Máx 25)',
+                        data: [p1, p2, p3, p4],
+                        backgroundColor: 'rgba(20, 184, 166, 0.2)', // Brand color
+                        borderColor: '#0d9488',
+                        pointBackgroundColor: '#0f172a',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#0f172a',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.05)' },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            pointLabels: {
+                                font: { family: "'Inter', sans-serif", size: 11, weight: '600' },
+                                color: '#475569'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 25,
+                            ticks: { stepSize: 5, display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Função Demo
+        function carregarDemo() {
+            document.getElementById('empresa').value = 'TechLog Logistics SA';
+            document.getElementById('setor').value = 'Logística e Transportes';
+            document.getElementById('porte').value = 'Média (50-249)';
+            
+            document.getElementById('p1_q1').value = '7.5';
+            document.getElementById('p1_q2').value = '5';
+            
+            document.getElementById('p2_q1').value = '7.5';
+            document.getElementById('p2_q2').value = '5';
+            
+            document.getElementById('p3_q1').value = '7.5';
+            document.getElementById('p3_q2').value = '5';
+            
+            document.getElementById('p4_q1').value = '7.5';
+            document.getElementById('p4_q2').value = '0'; // Forçando pontuação baixa em segurança para demo
+            
+            document.getElementById('assessmentForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Função Limpar
+        function limparFormulario() {
+            document.getElementById('assessmentForm').reset();
+            document.getElementById('dashboard-section').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
