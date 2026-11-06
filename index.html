@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud & Infra Readiness Advisor | Simulador de Migração</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        azure: '#0078D4',
+                        techpurple: '#7010a3',
+                        success: '#10B981',
+                        risk: '#EF4444',
+                        corporate: '#4B5563',
+                        darkbg: '#0F172A',
+                        glass: 'rgba(30, 41, 59, 0.7)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A;
+            color: #F8FAFC;
+        }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #0078D4, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: #FFFFFF !important;
+                color: #000000 !important;
+            }
+            .no-print, #input-section {
+                display: none !important;
+            }
+            .glass-panel {
+                background: none !important;
+                border: 1px solid #E5E7EB !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+                break-inside: avoid;
+            }
+            .text-white, .text-slate-300, .text-slate-400 {
+                color: #374151 !important;
+            }
+            .gradient-text {
+                background: none;
+                -webkit-text-fill-color: #0078D4;
+                color: #0078D4;
+            }
+            #dashboard-section {
+                display: block !important;
+            }
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+                page-break-inside: avoid;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748B;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col selection:bg-azure selection:text-white">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-br from-azure to-techpurple rounded-lg">
+                    <i class="fa-solid fa-cloud text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Cloud & Infra Readiness Advisor</h1>
+                    <p class="text-xs text-slate-400">Simulador Inteligente de Migração para a Nuvem</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-sm font-medium">
+                <i class="fa-solid fa-shield-halved"></i>
+                Privacy by Design (LGPD)
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Input Section -->
+        <section id="input-section" class="space-y-8">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <h2 class="text-3xl font-bold mb-4">Diagnóstico de <span class="gradient-text">Infraestrutura</span></h2>
+                <p class="text-slate-400">Preencha o assessment abaixo para gerar um laudo técnico automatizado sobre a prontidão da sua empresa para a nuvem, riscos operacionais e arquitetura recomendada.</p>
+            </div>
+
+            <form id="assessment-form" class="space-y-6">
+                <!-- Etapa 1: Perfil da Empresa -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-building text-azure"></i> Etapa 1 – Perfil da Empresa
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Nome da Empresa</label>
+                            <input type="text" id="empresa" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure focus:ring-1 focus:ring-azure transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Segmento</label>
+                            <input type="text" id="segmento" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure focus:ring-1 focus:ring-azure transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Porte</label>
+                            <select id="porte" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure focus:ring-1 focus:ring-azure transition-colors">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Microempresa">Microempresa</option>
+                                <option value="Pequena">Pequena</option>
+                                <option value="Média">Média</option>
+                                <option value="Grande">Grande</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Nº de Colaboradores</label>
+                            <input type="number" id="colaboradores" required min="1" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure focus:ring-1 focus:ring-azure transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Nº de Unidades/Filiais</label>
+                            <input type="number" id="unidades" required min="1" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure focus:ring-1 focus:ring-azure transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etapa 2: Infraestrutura -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-server text-techpurple"></i> Etapa 2 – Avaliação de Infraestrutura
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q1. Servidores físicos atuais?</label>
+                            <select id="q1" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="0">Nenhum</option>
+                                <option value="2">1 a 2</option>
+                                <option value="5">3 a 5</option>
+                                <option value="10">6 a 10</option>
+                                <option value="11">Mais de 10</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q2. Onde estão hospedados?</label>
+                            <select id="q2" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="pcs">Computadores locais</option>
+                                <option value="local">Servidor local</option>
+                                <option value="dc">Data Center terceirizado</option>
+                                <option value="hibrido">Ambiente híbrido</option>
+                                <option value="nuvem">Nuvem</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q3. Idade da infraestrutura?</label>
+                            <select id="q3" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="8+">Mais de 8 anos</option>
+                                <option value="5-8">5 a 8 anos</option>
+                                <option value="3-5">3 a 5 anos</option>
+                                <option value="<3">Menos de 3 anos</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etapa 3: Backup e Dados -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-database text-azure"></i> Etapa 3 – Backup e Dados
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q4. Processo formal de backup?</label>
+                            <select id="q4" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Parcial">Parcial</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q5. Seguem a regra 3-2-1?</label>
+                            <select id="q5" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Parcial">Parcialmente</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q6. Volume aproximado de dados?</label>
+                            <select id="q6" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="100GB">Menos de 100 GB</option>
+                                <option value="1TB">100 GB a 1 TB</option>
+                                <option value="10TB">1 TB a 10 TB</option>
+                                <option value="10TB+">Acima de 10 TB</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etapa 4: Continuidade -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-truck-fast text-success"></i> Etapa 4 – Continuidade e Disponibilidade
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q7. Frequência de indisponibilidade?</label>
+                            <select id="q7" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Semanalmente">Semanalmente</option>
+                                <option value="Mensalmente">Mensalmente</option>
+                                <option value="Trimestralmente">Trimestralmente</option>
+                                <option value="Nunca">Quase nunca</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q8. Plano de Recuperação (DR)?</label>
+                            <select id="q8" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Parcial">Parcial</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q9. Redundância operacional?</label>
+                            <select id="q9" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Parcial">Parcial</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etapa 5: Segurança -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-risk"></i> Etapa 5 – Segurança e Governança
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q10. Utiliza MFA?</label>
+                            <select id="q10" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="TI">Apenas equipe de TI</option>
+                                <option value="Todos">Todos os usuários</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q11. Controle formal de acessos?</label>
+                            <select id="q11" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Parcial">Parcial</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Q12. Adequação à LGPD?</label>
+                            <select id="q12" required class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-azure">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="Nao">Não</option>
+                                <option value="Andamento">Em andamento</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-wrap gap-4 justify-center pt-4">
+                    <button type="button" onclick="carregarExemplo()" class="px-6 py-3 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-yellow-400"></i> Carregar Caso Exemplo
+                    </button>
+                    <button type="button" onclick="limparFormulario()" class="px-6 py-3 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-eraser"></i> Novo Diagnóstico
+                    </button>
+                    <button type="submit" class="px-8 py-3 rounded-lg font-bold bg-gradient-to-r from-azure to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all shadow-lg shadow-azure/30 flex items-center gap-2 transform hover:scale-105">
+                        <i class="fa-solid fa-microchip"></i> Executar Diagnóstico
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Dashboard Section (Hidden by default) -->
+        <section id="dashboard-section" class="hidden mt-12 space-y-8 animate-fade-in pb-16">
+            
+            <div class="flex justify-between items-end border-b border-slate-700 pb-4 no-print">
+                <div>
+                    <h2 class="text-3xl font-bold">Laudo Técnico de Assessment</h2>
+                    <p class="text-slate-400 mt-1">Gerado para <span id="out-empresa" class="font-semibold text-white"></span></p>
+                </div>
+                <button onclick="window.print()" class="px-5 py-2 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-risk"></i> Exportar Laudo PDF
+                </button>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="glass-panel p-5 rounded-xl text-center border-l-4" id="card-readiness">
+                    <h4 class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Cloud Readiness</h4>
+                    <div class="text-4xl font-bold mb-1" id="score-readiness">0%</div>
+                    <div class="text-xs font-semibold px-2 py-1 rounded-full inline-block mt-1" id="badge-readiness">Calculando...</div>
+                </div>
+                <div class="glass-panel p-5 rounded-xl text-center border-l-4" id="card-risk">
+                    <h4 class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Operational Risk</h4>
+                    <div class="text-4xl font-bold mb-1" id="score-risk">0%</div>
+                    <div class="text-xs font-semibold px-2 py-1 rounded-full inline-block mt-1" id="badge-risk">Calculando...</div>
+                </div>
+                <div class="glass-panel p-5 rounded-xl text-center border-l-4 border-blue-500">
+                    <h4 class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Security Readiness</h4>
+                    <div class="text-4xl font-bold mb-1 text-blue-400" id="score-security">0%</div>
+                    <div class="text-xs text-slate-400 mt-1">Maturidade de Segurança</div>
+                </div>
+                <div class="glass-panel p-5 rounded-xl text-center border-l-4 border-techpurple">
+                    <h4 class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Recomendação</h4>
+                    <div class="text-2xl font-bold text-techpurple mt-3 mb-2" id="out-recomendacao">SaaS</div>
+                    <div class="text-xs text-slate-400">Arquitetura Alvo</div>
+                </div>
+                <div class="glass-panel p-5 rounded-xl text-center border-l-4 border-success">
+                    <h4 class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">ROI Potencial</h4>
+                    <div class="text-2xl font-bold text-success mt-3 mb-2" id="out-roi">Alto</div>
+                    <div class="text-xs text-slate-400">Estimativa de Retorno</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+                <div class="glass-panel p-6 rounded-xl flex flex-col items-center justify-center">
+                    <h4 class="text-lg font-semibold mb-4 text-center w-full border-b border-slate-700 pb-2">Dimensões de Prontidão</h4>
+                    <div class="w-full relative h-64">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl flex flex-col items-center justify-center">
+                    <h4 class="text-lg font-semibold mb-4 text-center w-full border-b border-slate-700 pb-2">Distribuição de Status</h4>
+                    <div class="w-full relative h-64">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl flex flex-col items-center justify-center">
+                    <h4 class="text-lg font-semibold mb-4 text-center w-full border-b border-slate-700 pb-2">Atual vs Recomendado</h4>
+                    <div class="w-full relative h-64">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Report -->
+            <div class="glass-panel p-8 rounded-xl page-break">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-700 pb-3">
+                    <i class="fa-solid fa-file-signature text-azure"></i> Relatório Executivo
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-sm leading-relaxed">
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-building-circle-exclamation text-slate-400 mr-2"></i>Resumo Executivo</h4>
+                        <p id="rep-resumo" class="text-slate-300 mb-6 bg-slate-800/50 p-4 rounded-lg"></p>
+
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-network-wired text-slate-400 mr-2"></i>Infraestrutura Atual</h4>
+                        <p id="rep-infra" class="text-slate-300 mb-6 bg-slate-800/50 p-4 rounded-lg"></p>
+
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-triangle-exclamation text-risk mr-2"></i>Principais Riscos Identificados</h4>
+                        <ul id="rep-riscos" class="list-disc pl-5 text-slate-300 space-y-1 mb-6 bg-slate-800/50 p-4 rounded-lg"></ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-lightbulb text-yellow-400 mr-2"></i>Oportunidades de Melhoria</h4>
+                        <ul id="rep-oportunidades" class="list-disc pl-5 text-slate-300 space-y-1 mb-6 bg-slate-800/50 p-4 rounded-lg"></ul>
+
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-layer-group text-techpurple mr-2"></i>Tecnologias Recomendadas</h4>
+                        <ul id="rep-tecnologias" class="list-disc pl-5 text-slate-300 space-y-1 mb-6 bg-slate-800/50 p-4 rounded-lg"></ul>
+
+                        <h4 class="text-lg font-semibold text-white mb-2"><i class="fa-solid fa-chart-line text-success mr-2"></i>Benefícios Esperados</h4>
+                        <ul id="rep-beneficios" class="list-disc pl-5 text-slate-300 space-y-1 bg-slate-800/50 p-4 rounded-lg">
+                            <li>Redução de custos operacionais (TCO) e despesas de capital (CapEx).</li>
+                            <li>Alta disponibilidade, resiliência e escalabilidade sob demanda.</li>
+                            <li>Aumento significativo no nível de segurança e conformidade (LGPD).</li>
+                            <li>Modernização tecnológica habilitando Inovação e Inteligência Artificial.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roadmap -->
+            <div class="glass-panel p-8 rounded-xl page-break">
+                <h3 class="text-2xl font-bold mb-8 flex items-center gap-3 border-b border-slate-700 pb-3">
+                    <i class="fa-solid fa-map-location-dot text-success"></i> Roadmap Seguro de Migração
+                </h3>
+                
+                <div class="relative border-l-2 border-slate-600 ml-3 md:ml-6 space-y-8 pb-4">
+                    <div class="relative pl-8">
+                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-azure border-4 border-slate-900"></div>
+                        <h5 class="text-lg font-bold text-azure">Fase 1: Assessment e Descoberta</h5>
+                        <p class="text-slate-300 text-sm mt-1">Mapeamento detalhado de dependências, inventário de aplicações, análise de custos (TCO na nuvem) e definição de arquitetura de rede e identidade.</p>
+                    </div>
+                    <div class="relative pl-8">
+                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-techpurple border-4 border-slate-900"></div>
+                        <h5 class="text-lg font-bold text-techpurple">Fase 2: Estruturação de Backup e Segurança</h5>
+                        <p class="text-slate-300 text-sm mt-1">Implementação de Landing Zone, configuração de governança, IAM (incluindo MFA), e adoção de rotinas de backup seguindo a regra 3-2-1 antes de qualquer movimentação de dados.</p>
+                    </div>
+                    <div class="relative pl-8">
+                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-400 border-4 border-slate-900"></div>
+                        <h5 class="text-lg font-bold text-blue-400">Fase 3: Projeto Piloto em Nuvem</h5>
+                        <p class="text-slate-300 text-sm mt-1">Migração de uma carga de trabalho não-crítica para validar a arquitetura, processos de rede, latência e treinar a equipe interna (PoC).</p>
+                    </div>
+                    <div class="relative pl-8">
+                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-yellow-500 border-4 border-slate-900"></div>
+                        <h5 class="text-lg font-bold text-yellow-500">Fase 4: Migração Gradual</h5>
+                        <p class="text-slate-300 text-sm mt-1">Movimentação em ondas das cargas de trabalho, seguindo a estratégia de adoção recomendada (Rehost, Refactor, Rearchitect ou Repurchase/SaaS).</p>
+                    </div>
+                    <div class="relative pl-8">
+                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-success border-4 border-slate-900"></div>
+                        <h5 class="text-lg font-bold text-success">Fase 5: Operação Cloud e Governança</h5>
+                        <p class="text-slate-300 text-sm mt-1">Otimização contínua de custos (FinOps), monitoramento proativo, ajustes de segurança (CSPM) e evolução para serviços Cloud Native (PaaS/Serverless).</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 mt-auto py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
+            <p class="font-semibold text-slate-300 mb-2">Cloud & Infra Readiness Advisor®</p>
+            <p class="mb-4">Ferramenta educacional de Assessment de Infraestrutura e Migração para Computação em Nuvem.</p>
+            <p class="text-xs text-slate-500">Desenvolvido por especialistas em: Arquitetura Cloud • Segurança da Informação • Governança de TI • Continuidade de Negócios • Transformação Digital</p>
+            <div class="mt-4 flex justify-center items-center gap-2 text-xs">
+                <i class="fa-solid fa-check-circle text-success"></i> Todos os dados processados localmente no navegador. Nenhuma informação é enviada para servidores externos.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Configuração Global do Chart.js para Dark Mode
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.scale.grid.color = 'rgba(148, 163, 184, 0.1)';
+
+        let radarChartInstance = null;
+        let doughnutChartInstance = null;
+        let barChartInstance = null;
+
+        // Utilitários de Pontuação
+        const mapAnswersToScores = () => {
+            const data = {
+                empresa: document.getElementById('empresa').value,
+                segmento: document.getElementById('segmento').value,
+                porte: document.getElementById('porte').value,
+                colabs: parseInt(document.getElementById('colaboradores').value || 0),
+                q1: parseInt(document.getElementById('q1').value || -1), // Servidores
+                q2: document.getElementById('q2').value, // Hospedagem
+                q3: document.getElementById('q3').value, // Idade
+                q4: document.getElementById('q4').value, // Backup processo
+                q5: document.getElementById('q5').value, // 3-2-1
+                q6: document.getElementById('q6').value, // Volume
+                q7: document.getElementById('q7').value, // Indisponibilidade
+                q8: document.getElementById('q8').value, // DR
+                q9: document.getElementById('q9').value, // Redundancia
+                q10: document.getElementById('q10').value, // MFA
+                q11: document.getElementById('q11').value, // Controle Acesso
+                q12: document.getElementById('q12').value // LGPD
+            };
+
+            // Variáveis de Cálculo
+            let cloudPoints = 0, cloudMax = 60;
+            let riskPoints = 0, riskMax = 80;
+            let secPoints = 0, secMax = 50;
+
+            // Q1 - Servidores
+            if(data.q1 === 0) { cloudPoints += 10; riskPoints += 0; }
+            else if(data.q1 === 2) { cloudPoints += 8; riskPoints += 2; }
+            else if(data.q1 === 5) { cloudPoints += 5; riskPoints += 4; }
+            else if(data.q1 === 10) { cloudPoints += 3; riskPoints += 7; }
+            else { cloudPoints += 0; riskPoints += 10; }
+
+            // Q2 - Hospedagem
+            if(data.q2 === 'pcs') { cloudPoints += 0; riskPoints += 10; }
+            else if(data.q2 === 'local') { cloudPoints += 2; riskPoints += 8; }
+            else if(data.q2 === 'dc') { cloudPoints += 5; riskPoints += 4; }
+            else if(data.q2 === 'hibrido') { cloudPoints += 7; riskPoints += 2; }
+            else if(data.q2 === 'nuvem') { cloudPoints += 10; riskPoints += 0; }
+
+            // Q3 - Idade
+            if(data.q3 === '8+') { cloudPoints += 0; riskPoints += 10; }
+            else if(data.q3 === '5-8') { cloudPoints += 3; riskPoints += 7; }
+            else if(data.q3 === '3-5') { cloudPoints += 6; riskPoints += 4; }
+            else if(data.q3 === '<3') { cloudPoints += 10; riskPoints += 1; }
+
+            // Q4 - Backup
+            if(data.q4 === 'Nao') { riskPoints += 10; secPoints += 0; }
+            else if(data.q4 === 'Parcial') { riskPoints += 5; secPoints += 5; }
+            else if(data.q4 === 'Sim') { riskPoints += 0; secPoints += 10; }
+
+            // Q5 - 3-2-1
+            if(data.q5 === 'Nao') { riskPoints += 10; secPoints += 0; }
+            else if(data.q5 === 'Parcial') { riskPoints += 5; secPoints += 5; }
+            else if(data.q5 === 'Sim') { riskPoints += 0; secPoints += 10; }
+
+            // Q7 - Indisponibilidade
+            if(data.q7 === 'Semanalmente') { riskPoints += 10; cloudPoints += 0;}
+            else if(data.q7 === 'Mensalmente') { riskPoints += 7; cloudPoints += 3;}
+            else if(data.q7 === 'Trimestralmente') { riskPoints += 3; cloudPoints += 6;}
+            else if(data.q7 === 'Nunca') { riskPoints += 0; cloudPoints += 10;}
+
+            // Q8 - DR
+            if(data.q8 === 'Nao') { riskPoints += 10; cloudPoints += 0;}
+            else if(data.q8 === 'Parcial') { riskPoints += 5; cloudPoints += 5;}
+            else if(data.q8 === 'Sim') { riskPoints += 0; cloudPoints += 10;}
+
+            // Q9 - Redundância
+            if(data.q9 === 'Nao') { riskPoints += 10; cloudPoints += 0;}
+            else if(data.q9 === 'Parcial') { riskPoints += 5; cloudPoints += 5;}
+            else if(data.q9 === 'Sim') { riskPoints += 0; cloudPoints += 10;}
+
+            // Q10 - MFA
+            if(data.q10 === 'Nao') { secPoints += 0; riskPoints += 10; }
+            else if(data.q10 === 'TI') { secPoints += 5; riskPoints += 5; }
+            else if(data.q10 === 'Todos') { secPoints += 10; riskPoints += 0; }
+
+            // Q11 - Acesso
+            if(data.q11 === 'Nao') { secPoints += 0; riskPoints += 10; }
+            else if(data.q11 === 'Parcial') { secPoints += 5; riskPoints += 5; }
+            else if(data.q11 === 'Sim') { secPoints += 10; riskPoints += 0; }
+
+            // Q12 - LGPD
+            if(data.q12 === 'Nao') { secPoints += 0; }
+            else if(data.q12 === 'Andamento') { secPoints += 5; }
+            else if(data.q12 === 'Sim') { secPoints += 10; }
+
+            // Normalize to 100%
+            // Cloud Readiness: we want it to represent how modern/ready they are.
+            // If they have all legacy, readiness is low. 
+            let readinessScore = Math.round((cloudPoints / cloudMax) * 100);
+            
+            // Risk Max possible is around 110. Let's normalize safely.
+            let riskScore = Math.round((riskPoints / 110) * 100);
+            if(riskScore > 100) riskScore = 100;
+            
+            let securityScore = Math.round((secPoints / secMax) * 100);
+
+            return { readinessScore, riskScore, securityScore, data };
+        };
+
+        const getDecision = (data) => {
+            let recommendation = "";
+            let technologies = [];
+            
+            const isSmall = data.porte === 'Microempresa' || data.porte === 'Pequena';
+            const lowServers = data.q1 === 0 || data.q1 === 2;
+            const hasDev = data.segmento.toLowerCase().includes('tec') || data.segmento.toLowerCase().includes('dev');
+            const largeData = data.q6 === '10TB' || data.q6 === '10TB+';
+            const legacy = data.q3 === '8+';
+            const manyServers = data.q1 === 10 || data.q1 === 11;
+            const hybridNow = data.q2 === 'hibrido';
+
+            if (hybridNow || (manyServers && largeData)) {
+                recommendation = "Ambiente Híbrido";
+                technologies = ["Azure Arc", "Azure Stack HCI", "AWS Outposts", "Google Anthos / GKE"];
+            } else if (legacy || (manyServers && !isSmall)) {
+                recommendation = "IaaS (Infrastructure as a Service)";
+                technologies = ["Azure Virtual Machines", "AWS EC2", "Google Compute Engine", "Azure VPN Gateway"];
+            } else if (hasDev && !legacy) {
+                recommendation = "PaaS (Platform as a Service)";
+                technologies = ["Azure App Service", "Azure SQL Database", "Google App Engine", "AWS Elastic Beanstalk", "Heroku"];
+            } else {
+                // Default / Small teams
+                recommendation = "SaaS (Software as a Service)";
+                technologies = ["Microsoft 365", "Google Workspace", "Salesforce", "HubSpot", "Azure AD / Entra ID"];
+            }
+            
+            return { recommendation, technologies };
+        };
+
+        const updateDashboardVisuals = (readiness, risk, security, decisionData) => {
+            const elReadiness = document.getElementById('score-readiness');
+            const elBadgeReadiness = document.getElementById('badge-readiness');
+            const cardReadiness = document.getElementById('card-readiness');
+
+            const elRisk = document.getElementById('score-risk');
+            const elBadgeRisk = document.getElementById('badge-risk');
+            const cardRisk = document.getElementById('card-risk');
+
+            // Set Scores
+            elReadiness.innerText = `${readiness}%`;
+            elRisk.innerText = `${risk}%`;
+            document.getElementById('score-security').innerText = `${security}%`;
+            document.getElementById('out-recomendacao').innerText = decisionData.recommendation;
+            
+            // ROI Calculation
+            let roi = "Média";
+            if(risk > 60 && readiness < 50) roi = "Alta"; // High risk, bad infra -> huge benefit
+            if(readiness > 80) roi = "Baixa (Otimização)"; // Already good
+            document.getElementById('out-roi').innerText = roi;
+
+            // Cloud Readiness Classification
+            let rClass, rColor, rText, rBorder;
+            if (readiness < 25) { rClass = 'bg-risk/20 text-risk'; rColor = '#EF4444'; rText = '🔴 Alto Risco'; rBorder = 'border-risk'; }
+            else if (readiness <= 50) { rClass = 'bg-orange-500/20 text-orange-500'; rColor = '#F97316'; rText = '🟠 Infraestrutura Vulnerável'; rBorder = 'border-orange-500'; }
+            else if (readiness <= 75) { rClass = 'bg-yellow-500/20 text-yellow-500'; rColor = '#EAB308'; rText = '🟡 Em Transição'; rBorder = 'border-yellow-500'; }
+            else if (readiness <= 90) { rClass = 'bg-success/20 text-success'; rColor = '#10B981'; rText = '🟢 Cloud Ready'; rBorder = 'border-success'; }
+            else { rClass = 'bg-blue-500/20 text-blue-500'; rColor = '#3B82F6'; rText = '🔵 Cloud Native'; rBorder = 'border-blue-500'; }
+
+            elBadgeReadiness.className = `text-xs font-semibold px-3 py-1 rounded-full inline-block mt-1 ${rClass}`;
+            elBadgeReadiness.innerText = rText;
+            cardReadiness.className = `glass-panel p-5 rounded-xl text-center border-l-4 ${rBorder}`;
+            elReadiness.style.color = rColor;
+
+            // Risk Classification
+            let rskClass, rskColor, rskText, rskBorder;
+            if (risk < 25) { rskClass = 'bg-success/20 text-success'; rskColor = '#10B981'; rskText = 'Baixo Risco'; rskBorder = 'border-success'; }
+            else if (risk <= 50) { rskClass = 'bg-yellow-500/20 text-yellow-500'; rskColor = '#EAB308'; rskText = 'Risco Moderado'; rskBorder = 'border-yellow-500'; }
+            else if (risk <= 75) { rskClass = 'bg-orange-500/20 text-orange-500'; rskColor = '#F97316'; rskText = 'Risco Elevado'; rskBorder = 'border-orange-500'; }
+            else { rskClass = 'bg-risk/20 text-risk'; rskColor = '#EF4444'; rskText = 'Risco Crítico'; rskBorder = 'border-risk'; }
+
+            elBadgeRisk.className = `text-xs font-semibold px-3 py-1 rounded-full inline-block mt-1 ${rskClass}`;
+            elBadgeRisk.innerText = rskText;
+            cardRisk.className = `glass-panel p-5 rounded-xl text-center border-l-4 ${rskBorder}`;
+            elRisk.style.color = rskColor;
+        };
+
+        const generateReportText = (res) => {
+            const data = res.data;
+            document.getElementById('out-empresa').innerText = data.empresa;
+
+            // Resumo
+            document.getElementById('rep-resumo').innerHTML = `A empresa <strong>${data.empresa}</strong>, atuante no segmento de <strong>${data.segmento}</strong> (Porte: ${data.porte}), possui um ambiente tecnológico que obteve <strong>${res.readinessScore}%</strong> no Índice de Prontidão para Nuvem. O nível de risco operacional atual está dimensionado em <strong>${res.riskScore}%</strong>, indicando a urgência e a viabilidade da modernização.`;
+
+            // Infra
+            let infraText = `A infraestrutura consiste em sistema de hospedagem predominante via <strong>${document.getElementById('q2').options[document.getElementById('q2').selectedIndex].text}</strong>, com servidores que possuem idade média de <strong>${document.getElementById('q3').options[document.getElementById('q3').selectedIndex].text}</strong>. `;
+            infraText += `O volume de dados estimado é de <strong>${document.getElementById('q6').options[document.getElementById('q6').selectedIndex].text}</strong>, atendendo a ${data.unidades} unidade(s) e ${data.colabs} colaborador(es).`;
+            document.getElementById('rep-infra').innerHTML = infraText;
+
+            // Riscos
+            let riscosHtml = '';
+            if(data.q4 === 'Nao') riscosHtml += '<li><strong>Falha Crítica de Backup:</strong> Ausência de rotinas estruturadas ameaça a continuidade em caso de ransomware ou falha de hardware.</li>';
+            if(data.q5 !== 'Sim' && data.q4 !== 'Nao') riscosHtml += '<li><strong>Vulnerabilidade de Dados:</strong> O modelo de backup atual não segue as diretrizes de segurança 3-2-1.</li>';
+            if(data.q9 === 'Nao') riscosHtml += '<li><strong>Ponto Único de Falha:</strong> Ausência de redundância operacional, expondo o negócio a paradas não programadas.</li>';
+            if(data.q8 === 'Nao') riscosHtml += '<li><strong>Falta de DR:</strong> Inexistência de Plano de Recuperação de Desastres.</li>';
+            if(data.q10 === 'Nao') riscosHtml += '<li><strong>Risco de Identidade:</strong> Ausência de Autenticação Multifator (MFA), facilitando ataques de força bruta e phishing.</li>';
+            if(data.q3 === '8+') riscosHtml += '<li><strong>Datacenter Obsoleto:</strong> Hardware em fim de vida útil (End of Life), com alto risco de quebra e manutenção cara.</li>';
+            
+            if(riscosHtml === '') riscosHtml = '<li>Nenhum risco crítico proeminente identificado nos dados básicos, porém monitoramento contínuo é aconselhado.</li>';
+            document.getElementById('rep-riscos').innerHTML = riscosHtml;
+
+            // Oportunidades
+            let opHtml = '';
+            if(res.readinessScore < 75) opHtml += '<li><strong>Migração para Cloud:</strong> Descomissionamento de hardware legado e transição para OPEX.</li>';
+            if(data.q10 !== 'Todos') opHtml += '<li><strong>Modernização de Identidade:</strong> Implementação de IAM (Identity and Access Management) com MFA habilitado para 100% dos usuários.</li>';
+            if(data.q12 !== 'Sim') opHtml += '<li><strong>Governança de Dados:</strong> Adequação urgente aos preceitos da LGPD e controles de privacidade.</li>';
+            opHtml += '<li><strong>Resiliência:</strong> Implementação de rotinas automatizadas de backup em nuvem (BaaS) e DRaaS.</li>';
+            document.getElementById('rep-oportunidades').innerHTML = opHtml;
+
+            // Tecnologias
+            const decision = getDecision(data);
+            let techHtml = '';
+            decision.technologies.forEach(t => {
+                techHtml += `<li>${t}</li>`;
+            });
+            document.getElementById('rep-tecnologias').innerHTML = techHtml;
+        };
+
+        const drawCharts = (res) => {
+            // Destroy existing charts to prevent canvas memory leaks
+            if(radarChartInstance) radarChartInstance.destroy();
+            if(doughnutChartInstance) doughnutChartInstance.destroy();
+            if(barChartInstance) barChartInstance.destroy();
+
+            // Radar Chart
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            radarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Infraestrutura', 'Backup', 'Continuidade', 'Segurança', 'Governança'],
+                    datasets: [{
+                        label: 'Seu Ambiente',
+                        data: [
+                            res.readinessScore, 
+                            res.data.q4 === 'Sim' ? 100 : (res.data.q4 === 'Parcial' ? 50 : 0),
+                            res.data.q9 === 'Sim' ? 100 : (res.data.q9 === 'Parcial' ? 50 : 0),
+                            res.securityScore,
+                            res.data.q12 === 'Sim' ? 100 : (res.data.q12 === 'Andamento' ? 50 : 0)
+                        ],
+                        backgroundColor: 'rgba(0, 120, 212, 0.2)',
+                        borderColor: '#0078D4',
+                        pointBackgroundColor: '#0078D4',
+                        borderWidth: 2
+                    }, {
+                        label: 'Padrão Cloud Native',
+                        data: [100, 100, 100, 100, 100],
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderColor: '#10B981',
+                        borderDash: [5, 5],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#94a3b8', font: { size: 12 } },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Doughnut Chart
+            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            doughnutChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Prontidão', 'Risco', 'Lacunas Técnicas'],
+                    datasets: [{
+                        data: [res.readinessScore, res.riskScore, Math.max(0, 100 - res.readinessScore)],
+                        backgroundColor: ['#0078D4', '#EF4444', '#4B5563'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Bar Chart
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Segurança', 'Disponibilidade', 'Eficiência'],
+                    datasets: [{
+                        label: 'Situação Atual',
+                        data: [res.securityScore, 100 - res.riskScore, res.readinessScore],
+                        backgroundColor: '#4B5563',
+                        borderRadius: 4
+                    }, {
+                        label: 'Situação Recomendada (Cloud)',
+                        data: [95, 99, 90],
+                        backgroundColor: '#10B981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        };
+
+        // Form Submit Handler
+        document.getElementById('assessment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const results = mapAnswersToScores();
+            const decision = getDecision(results.data);
+            
+            updateDashboardVisuals(results.readinessScore, results.riskScore, results.securityScore, decision);
+            generateReportText(results);
+            
+            const dash = document.getElementById('dashboard-section');
+            dash.classList.remove('hidden');
+            
+            // Draw charts after making element visible so size is calculated correctly
+            setTimeout(() => {
+                drawCharts(results);
+                dash.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+
+        // Mock Data Function
+        const carregarExemplo = () => {
+            document.getElementById('empresa').value = 'TechFutura Indústria Ltda.';
+            document.getElementById('segmento').value = 'Manufatura';
+            document.getElementById('porte').value = 'Média';
+            document.getElementById('colaboradores').value = '250';
+            document.getElementById('unidades').value = '3';
+            
+            document.getElementById('q1').value = '10'; // 6 a 10
+            document.getElementById('q2').value = 'local'; // Servidor local
+            document.getElementById('q3').value = '8+'; // Mais de 8 anos
+            
+            document.getElementById('q4').value = 'Parcial'; 
+            document.getElementById('q5').value = 'Nao';
+            document.getElementById('q6').value = '1TB';
+            
+            document.getElementById('q7').value = 'Mensalmente';
+            document.getElementById('q8').value = 'Nao';
+            document.getElementById('q9').value = 'Nao';
+            
+            document.getElementById('q10').value = 'TI';
+            document.getElementById('q11').value = 'Parcial';
+            document.getElementById('q12').value = 'Andamento';
+
+            // Trigger submit automatically
+            document.getElementById('assessment-form').dispatchEvent(new Event('submit'));
+        };
+
+        // Clear Form Function
+        const limparFormulario = () => {
+            document.getElementById('assessment-form').reset();
+            document.getElementById('dashboard-section').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    </script>
+</body>
+</html>
