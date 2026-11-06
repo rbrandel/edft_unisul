@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor de Automação com IA & Governança LGPD</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6', // Violet
+                            600: '#7c3aed',
+                            900: '#4c1d95',
+                        },
+                        dark: '#111827',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Otimização para PDF/Impressão */
+        @media print {
+            body { background-color: #ffffff; color: #000; }
+            .no-print, #form-section { display: none !important; }
+            #dashboard-section { display: block !important; }
+            .print-break { page-break-before: always; }
+            .glass-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
+            .text-white { color: #111827 !important; }
+            .bg-dark { background-color: #ffffff !important; color: #111827 !important; border-bottom: 2px solid #111827;}
+            canvas { max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-dark text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-brand-600 rounded-lg">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">AI Automation Auditor</h1>
+                    <p class="text-xs text-slate-400">Calculadora de ROI & Governança LGPD</p>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-3 text-sm no-print">
+                <span class="flex items-center gap-1 px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    <i class="fa-solid fa-shield-halved text-brand-500"></i> LGPD Ready
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Área do Formulário -->
+        <section id="form-section" class="space-y-6">
+            <div class="text-center max-w-3xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold text-dark mb-4">Auditoria de <span class="text-brand-600">Produtividade e Segurança</span></h2>
+                <p class="text-slate-600">Descubra quanto sua empresa pode economizar automatizando tarefas com IA e verifique se seu ambiente está preparado para isso com segurança e adequação à LGPD.</p>
+            </div>
+
+            <form id="auditForm" class="space-y-8">
+                
+                <!-- Sec 1: Perfil & Custos -->
+                <div class="glass-card rounded-xl p-6 border-t-4 border-t-slate-800">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-building text-slate-800"></i> 1. Perfil e Custos Operacionais
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Empresa</label>
+                            <input type="text" id="empresa" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Nº de Colaboradores Impactados</label>
+                            <input type="number" id="colaboradores" required min="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Custo Médio/Hora (R$ por pessoa)</label>
+                            <input type="number" id="custoHora" required min="1" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sec 2: Potencial de Automação -->
+                <div class="glass-card rounded-xl p-6 border-t-4 border-t-brand-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-stopwatch text-brand-600"></i> 2. Potencial de Automação (Horas gastas na semana por pessoa)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Digitação e Tarefas Manuais (Horas/sem)</label>
+                            <input type="number" id="hManuais" required min="0" max="40" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Coleta de Dados e Relatórios (Horas/sem)</label>
+                            <input type="number" id="hRelatorios" required min="0" max="40" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Suporte/Atendimento Repetitivo (Horas/sem)</label>
+                            <input type="number" id="hSuporte" required min="0" max="40" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sec 3: Governança e LGPD -->
+                <div class="glass-card rounded-xl p-6 border-t-4 border-t-emerald-500">
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-emerald-600"></i> 3. Checklist de Governança, IA e LGPD
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">A. Existe controle de acesso rígido e Duplo Fator (MFA) obrigatório?</label>
+                            <select id="govMFA" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="25">Sim, em todos os sistemas críticos.</option>
+                                <option value="10">Parcialmente (apenas para TI/Diretoria).</option>
+                                <option value="0">Não utilizamos MFA.</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">B. Há uma política documentada sobre o uso de IA Generativa (ex: ChatGPT)?</label>
+                            <select id="govPol" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="25">Sim, regras claras e assinadas.</option>
+                                <option value="10">Parcialmente, acordos informais.</option>
+                                <option value="0">Não existe política (Shadow IT).</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">C. Os dados inseridos em IAs e integrações são mascarados/anonimizados?</label>
+                            <select id="govMask" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="25">Sim, usamos ferramentas corporativas privadas.</option>
+                                <option value="10">Às vezes, dependendo do bom senso do usuário.</option>
+                                <option value="0">Não, colamos dados reais (risco LGPD).</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">D. A equipe recebe treinamento periódico sobre Phishing e Segurança?</label>
+                            <select id="govTrain" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="25">Sim, treinamentos frequentes.</option>
+                                <option value="10">Apenas na integração inicial (onboarding).</option>
+                                <option value="0">Não realizamos treinamentos estruturados.</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                    <button type="button" onclick="carregarDemo()" class="px-6 py-3 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> Carregar Caso Exemplo (Demo)
+                    </button>
+                    <button type="submit" class="px-8 py-3 rounded-lg font-bold bg-brand-600 hover:bg-brand-700 text-white transition-all shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Calcular ROI e Gerar Laudo
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- DASHBOARD DE RESULTADOS -->
+        <section id="dashboard-section" class="hidden mt-8 space-y-8 animate-fade-in pb-12">
+            
+            <div class="flex justify-between items-end border-b border-slate-300 pb-4 mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-dark">Laudo de Automação & Conformidade</h2>
+                    <p class="text-slate-500 mt-1">Empresa: <strong id="out-empresa" class="text-slate-800"></strong></p>
+                </div>
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.location.reload()" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Refazer
+                    </button>
+                    <button onclick="window.print()" class="px-5 py-2 rounded-lg text-sm font-medium bg-dark hover:bg-slate-800 text-white transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cards de Impacto -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Horas -->
+                <div class="glass-card p-6 rounded-xl text-center border-b-4 border-blue-500 shadow-sm">
+                    <i class="fa-regular fa-clock text-3xl text-blue-500 mb-3"></i>
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Horas Salvas (Mês)</h4>
+                    <div class="text-4xl font-black text-dark mt-2" id="out-horas">0h</div>
+                    <p class="text-xs text-slate-400 mt-2">Capacidade produtiva liberada</p>
+                </div>
+                <!-- Financeiro -->
+                <div class="glass-card p-6 rounded-xl text-center border-b-4 border-emerald-500 shadow-sm">
+                    <i class="fa-solid fa-money-bill-trend-up text-3xl text-emerald-500 mb-3"></i>
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Economia (R$/Mês)</h4>
+                    <div class="text-4xl font-black text-dark mt-2" id="out-reais">R$ 0</div>
+                    <p class="text-xs text-slate-400 mt-2">Redução de custo operacional estimado</p>
+                </div>
+                <!-- Governança -->
+                <div class="glass-card p-6 rounded-xl text-center border-b-4 border-brand-500 shadow-sm relative overflow-hidden">
+                    <i class="fa-solid fa-shield-check text-3xl text-brand-500 mb-3"></i>
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Score LGPD/Segurança</h4>
+                    <div class="text-4xl font-black text-dark mt-2" id="out-gov">0%</div>
+                    <div id="badge-risco" class="mt-2 text-xs font-bold px-3 py-1 rounded-full inline-block border"></div>
+                </div>
+            </div>
+
+            <!-- Gráficos e Matriz -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 print-break">
+                <!-- Bar Chart: Custos -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-lg font-bold mb-4 text-dark border-b pb-2">Impacto Financeiro Mensal</h4>
+                    <div class="relative h-64">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Doughnut Chart: Gov -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h4 class="text-lg font-bold mb-4 text-dark border-b pb-2">Maturidade em Segurança e Dados</h4>
+                    <div class="relative h-64 flex justify-center">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plano de Ação -->
+            <div class="glass-card p-8 rounded-xl print-break bg-slate-50">
+                <h3 class="text-2xl font-bold text-dark mb-6 flex items-center gap-3 border-b border-slate-300 pb-3">
+                    <i class="fa-solid fa-clipboard-check text-brand-600"></i> Plano de Automação Segura
+                </h3>
+                
+                <div class="space-y-6">
+                    <!-- Oportunidades de IA -->
+                    <div class="bg-white p-5 rounded-lg border border-blue-100 shadow-sm">
+                        <h4 class="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Tecnologias & Automação</h4>
+                        <p class="text-sm text-slate-700 mb-3" id="plan-ia-text"></p>
+                        <ul class="list-disc pl-5 text-sm text-slate-600 space-y-1" id="plan-ia-list"></ul>
+                    </div>
+
+                    <!-- Mitigação LGPD -->
+                    <div class="bg-white p-5 rounded-lg border border-rose-100 shadow-sm">
+                        <h4 class="text-lg font-bold text-rose-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Riscos LGPD & Mitigação</h4>
+                        <p class="text-sm text-slate-700 mb-3" id="plan-gov-text"></p>
+                        <ul class="list-disc pl-5 text-sm text-slate-600 space-y-1" id="plan-gov-list"></ul>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark border-t border-slate-800 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-sm">
+            <p class="font-semibold text-slate-200">Auditor de Automação com IA & Governança LGPD ®</p>
+            <div class="mt-3 flex justify-center items-center gap-2 text-xs bg-slate-800/50 inline-block px-3 py-1.5 rounded-lg border border-slate-700">
+                <i class="fa-solid fa-shield-check text-brand-500"></i> Privacy by Design: Processamento 100% local no navegador.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Configurações Globais do Chart.js
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+        let barChart = null;
+        let doughnutChart = null;
+
+        // Máscara monetária BR
+        const formatMoney = (value) => {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        };
+
+        document.getElementById('auditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 1. Coleta Dados Perfil
+            const empresa = document.getElementById('empresa').value;
+            const colabs = parseInt(document.getElementById('colaboradores').value);
+            const custoHora = parseFloat(document.getElementById('custoHora').value);
+            
+            // 2. Coleta Horas (por semana)
+            const hManuais = parseFloat(document.getElementById('hManuais').value);
+            const hRelatorios = parseFloat(document.getElementById('hRelatorios').value);
+            const hSuporte = parseFloat(document.getElementById('hSuporte').value);
+            
+            // 3. Coleta Governança
+            const govMFA = parseInt(document.getElementById('govMFA').value);
+            const govPol = parseInt(document.getElementById('govPol').value);
+            const govMask = parseInt(document.getElementById('govMask').value);
+            const govTrain = parseInt(document.getElementById('govTrain').value);
+
+            // --- CÁLCULOS DE AUTOMAÇÃO ---
+            // Taxas estimadas de automação por tipo de tarefa
+            const taxaManuais = 0.60;   // 60% automatizável (RPA, Make, n8n)
+            const taxaRelatorios = 0.80; // 80% automatizável (BI, Python, LLMs de dados)
+            const taxaSuporte = 0.50;    // 50% automatizável (Chatbots IA, FAQs inteligentes)
+
+            const horasTotaisSemana = hManuais + hRelatorios + hSuporte;
+            const horasSalvasSemana = (hManuais * taxaManuais) + (hRelatorios * taxaRelatorios) + (hSuporte * taxaSuporte);
+            
+            const horasSalvasMes = Math.round(horasSalvasSemana * 4 * colabs);
+            const custoAtualMes = Math.round(horasTotaisSemana * 4 * colabs * custoHora);
+            const economiaMes = Math.round(horasSalvasMes * custoHora);
+            const custoPosAutomacao = custoAtualMes - economiaMes;
+
+            // --- CÁLCULOS DE GOVERNANÇA ---
+            const scoreGov = govMFA + govPol + govMask + govTrain; // Max 100
+
+            // --- ATUALIZAR INTERFACE ---
+            document.getElementById('out-empresa').innerText = empresa;
+            document.getElementById('out-horas').innerText = `${horasSalvasMes.toLocaleString('pt-BR')}h`;
+            document.getElementById('out-reais').innerText = formatMoney(economiaMes);
+            document.getElementById('out-gov').innerText = `${scoreGov}%`;
+
+            // Badge de Risco
+            const badge = document.getElementById('badge-risco');
+            if(scoreGov < 40) {
+                badge.className = "mt-2 text-xs font-bold px-3 py-1 rounded-full border bg-red-100 text-red-700 border-red-300";
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Alto Risco LGPD';
+            } else if(scoreGov < 80) {
+                badge.className = "mt-2 text-xs font-bold px-3 py-1 rounded-full border bg-amber-100 text-amber-700 border-amber-300";
+                badge.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Risco Moderado';
+            } else {
+                badge.className = "mt-2 text-xs font-bold px-3 py-1 rounded-full border bg-emerald-100 text-emerald-700 border-emerald-300";
+                badge.innerHTML = '<i class="fa-solid fa-shield-check"></i> Pronto para IA Segura';
+            }
+
+            // --- GERAR PLANO DE AÇÃO ---
+            gerarPlano(hManuais, hRelatorios, hSuporte, govMFA, govPol, govMask, govTrain, economiaMes);
+
+            // --- GRÁFICOS ---
+            renderizarGraficos(custoAtualMes, custoPosAutomacao, scoreGov);
+
+            // Exibir Dashboard
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('dashboard-section').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+
+        function gerarPlano(man, rel, sup, mfa, pol, mask, train, economia) {
+            // Recomendações de IA
+            document.getElementById('plan-ia-text').innerText = `Com um potencial de economia de ${formatMoney(economia)} por mês, a adoção de IA justifica um orçamento tecnológico imediato. Principais frentes de ataque:`;
+            
+            let iaList = "";
+            if(man > 5) iaList += "<li><strong>Automação No-Code (Make / n8n):</strong> Elimine o trabalho de digitação conectando seus sistemas atuais via APIs para que dados trafeguem sem intervenção humana.</li>";
+            if(rel > 5) iaList += "<li><strong>IA para Dados (Copilot / ChatGPT Enterprise):</strong> Automatize a extração e consolidação de planilhas. IAs generativas podem ler PDFs, faturas e gerar relatórios em segundos.</li>";
+            if(sup > 5) iaList += "<li><strong>Agentes de Atendimento IA:</strong> Implemente chatbots baseados em RAG (Retrieval-Augmented Generation) treinados com o histórico da sua empresa para resolver 50% dos chamados repetitivos.</li>";
+            
+            if(iaList === "") iaList = "<li>O volume de tarefas mapeadas é baixo, sugerimos iniciar com automações simples e licenças individuais de Copilot.</li>";
+            document.getElementById('plan-ia-list').innerHTML = iaList;
+
+            // Recomendações de LGPD
+            document.getElementById('plan-gov-text').innerText = "ATENÇÃO: A velocidade da IA não pode ultrapassar as travas de segurança. Riscos identificados na sua operação atual que violam a LGPD:";
+            
+            let govList = "";
+            if(mfa < 25) govList += "<li class='text-rose-600'><strong>Risco de Vazamento de Identidade:</strong> A falta de MFA pleno permite que contas sejam hackeadas facilmente. Ative o Duplo Fator imediatamente para todos.</li>";
+            if(pol < 25) govList += "<li><strong>Shadow IT (IA Invisível):</strong> Sem uma política formal, colaboradores estão usando IAs gratuitas (não-seguras) por conta própria. Crie uma Política de Uso Aceitável de IA hoje.</li>";
+            if(mask < 25) govList += "<li class='text-rose-600'><strong>Violação LGPD Grave:</strong> Inserir dados reais de clientes (nomes, CPFs) em LLMs públicos treina os modelos externos com seus dados sigilosos. Contrate IAs Corporativas Privadas que não usam seus dados para treino.</li>";
+            if(train < 25) govList += "<li><strong>Fator Humano:</strong> A automação acelera erros. Implemente treinamentos trimestrais de conscientização sobre Engenharia Social e uso de IA no trabalho.</li>";
+            
+            if(govList === "") govList = "<li class='text-emerald-600'><strong>Parabéns!</strong> Seus controles básicos de acesso, política e mascaramento estão aderentes. Você possui um ambiente maduro para escalar tecnologias de automação.</li>";
+            document.getElementById('plan-gov-list').innerHTML = govList;
+        }
+
+        function renderizarGraficos(atual, pos, gov) {
+            // Bar Chart (Finanças)
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            if(barChart) barChart.destroy();
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Custo C/ Tarefas Manuais', 'Custo Pós-Automação'],
+                    datasets: [{
+                        label: 'Despesa Mensal (R$)',
+                        data: [atual, pos],
+                        backgroundColor: ['#94a3b8', '#10b981'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Doughnut Chart (Gov)
+            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            if(doughnutChart) doughnutChart.destroy();
+            
+            let colorGov = '#8b5cf6'; // default
+            if(gov < 40) colorGov = '#ef4444';
+            else if(gov < 80) colorGov = '#f59e0b';
+            else colorGov = '#10b981';
+
+            doughnutChart = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Score Atingido', 'Risco / Lacunas'],
+                    datasets: [{
+                        data: [gov, 100 - gov],
+                        backgroundColor: [colorGov, '#e2e8f0'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Função Demo
+        function carregarDemo() {
+            document.getElementById('empresa').value = 'TechCorp Serviços SA';
+            document.getElementById('colaboradores').value = '45';
+            document.getElementById('custoHora').value = '40.50';
+            
+            document.getElementById('hManuais').value = '15'; // Digitação
+            document.getElementById('hRelatorios').value = '10'; // Relatórios
+            document.getElementById('hSuporte').value = '8';  // Suporte
+            
+            document.getElementById('govMFA').value = '10'; // Parcial
+            document.getElementById('govPol').value = '0';  // Não tem
+            document.getElementById('govMask').value = '0'; // Não mascara
+            document.getElementById('govTrain').value = '10'; // Parcial
+            
+            document.getElementById('auditForm').dispatchEvent(new Event('submit'));
+        }
+    </script>
+</body>
+</html>
