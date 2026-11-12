@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Consultoria: Missão VarejoAtivo (A3)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6; /* Blue 500 */
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Document Preview Styles */
+        .doc-preview { background-color: white; color: #333; font-family: 'Times New Roman', Times, serif; }
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+        .doc-preview table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .doc-preview th, .doc-preview td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .doc-preview th { background-color: #f3f4f6; }
+        .doc-preview h1, .doc-preview h2, .doc-preview h3 { color: #1e3a8a; font-family: 'Inter', sans-serif; margin-top: 1.5em; }
+        
+        /* AI Chat Styles */
+        #ai-chat-window { transition: all 0.3s ease; }
+        .chat-msg { animation: fadeIn 0.3s ease-in; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="glass-panel sticky top-0 z-50 p-3 md:p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2 md:gap-3">
+                <i class="fa-solid fa-rocket text-blue-500 text-xl md:text-2xl"></i>
+                <div>
+                    <h1 class="font-bold text-base md:text-xl leading-tight">Unisul Consultoria</h1>
+                    <p class="text-[10px] md:text-xs text-slate-400" id="dynamic-context-display">Missão A3: VarejoAtivo</p>
+                </div>
+            </div>
+            <div class="text-xs md:text-sm font-semibold text-slate-300 text-right flex-shrink-0">
+                Fase <span id="current-phase-indicator" class="text-blue-400">0</span>/9
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-4 max-w-4xl mx-auto w-full">
+        
+        <!-- Intro/Methodology Screen -->
+        <div id="intro-screen" class="w-full fade-in max-w-3xl mx-auto">
+            <div class="glass-panel rounded-2xl p-8 mb-6 shadow-2xl text-center">
+                <i class="fa-solid fa-graduation-cap text-6xl text-blue-500 mb-6"></i>
+                <h2 class="text-3xl font-bold text-white mb-4">Simulador de Consultoria Estratégica</h2>
+                <p class="text-lg text-slate-300 mb-6 leading-relaxed">
+                    Bem-vindo à Atividade de Avaliação (A3) da disciplina de Exploração Digital. 
+                    Neste simulador, baseado em <strong>PBL (Problem-Based Learning)</strong> e integrado à trilha <strong>Google Cloud Digital Leader</strong>, 
+                    você atuará como um Consultor Sênior.
+                </p>
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl text-left mb-8">
+                    <h3 class="font-bold text-blue-400 mb-2"><i class="fa-solid fa-bullseye mr-2"></i>Sua Missão</h3>
+                    <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm">
+                        <li>Diagnosticar os problemas estruturais de uma rede varejista (VarejoAtivo).</li>
+                        <li>Propor uma arquitetura baseada em Cloud Pública (IaaS, PaaS, SaaS).</li>
+                        <li>Garantir integração de dados e boa usabilidade (IHC / Heurísticas de Nielsen).</li>
+                        <li><strong>Meta Dupla:</strong> O documento final servirá como base para a A3 e fornecerá insumos para você aprimorar seu <strong>App de Diagnóstico</strong> criado na aula anterior!</li>
+                    </ul>
+                </div>
+                <div id="intro-action-container">
+                    <button onclick="fetchDynamicProfiles()" id="btn-generate-profiles" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-blue-500/50 transition-all w-full md:w-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Gerar Perfis com IA (Gemini) e Escolher <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Briefing Screen -->
+        <div id="briefing-screen" class="w-full hidden fade-in max-w-3xl mx-auto">
+            <div class="glass-panel rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-blue-600 px-4 py-1 rounded-bl-xl font-bold text-sm">Confidencial</div>
+                <h2 class="text-3xl font-bold text-white mb-2 border-b border-slate-700 pb-4">Briefing: Rede VarejoAtivo</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Segmento Sorteado</p>
+                        <p id="briefing-nicho" class="text-xl font-bold text-blue-400">...</p>
+                    </div>
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Impacto / Dor Principal</p>
+                        <p id="briefing-foco" class="text-lg text-slate-200">...</p>
+                    </div>
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Volume de Operação</p>
+                        <p id="briefing-metricas" class="text-lg text-slate-200">...</p>
+                    </div>
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 border-l-4 border-l-red-500">
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Sistemas Legados Atuais</p>
+                        <p id="briefing-legado" class="text-sm text-slate-300">...</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="initGame()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-green-500/50 transition-all w-full md:w-auto">
+                        Aceitar Missão e Iniciar Fase 1 <i class="fa-solid fa-play ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="game-screen" class="w-full hidden fade-in">
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 rounded-full h-2 mb-6 md:mb-8">
+                <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Dialogue Box -->
+            <div class="glass-panel rounded-2xl p-5 md:p-8 mb-6 shadow-2xl relative mt-4 md:mt-0">
+                <div class="absolute -top-6 -left-2 md:-top-6 md:-left-6 bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center border-4 border-slate-900 shadow-lg">
+                    <i id="character-icon" class="fa-solid fa-user-tie text-white text-lg"></i>
+                </div>
+                <div class="ml-4 md:ml-8 mb-2">
+                    <h2 id="character-name" class="text-blue-400 font-bold text-base md:text-lg">CEO - VarejoAtivo</h2>
+                    <p id="dialogue-text" class="text-base md:text-xl text-slate-200 mt-2 font-light leading-relaxed">
+                        "Bem-vindo(a) à VarejoAtivo. Nossos sistemas de vendas e logística não conversam entre si e tudo é muito manual. Nossos gerentes não têm dados em tempo real. O que sua consultoria recomenda como primeiro passo para nossa transformação?"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <!-- Options injected via JS -->
+            </div>
+        </div>
+
+        <!-- Document Result Screen (Hidden initially) -->
+        <div id="result-screen" class="w-full hidden fade-in max-w-5xl">
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-green-400"><i class="fa-solid fa-check-circle mr-2"></i>Missão Concluída!</h2>
+                    <div class="bg-slate-900 border border-blue-500 rounded-xl p-3 text-center min-w-[200px] mt-4 md:mt-0 shadow-lg">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Pontuação da Consultoria</p>
+                        <p id="final-score-display" class="text-4xl font-bold text-blue-400 my-1">90/90</p>
+                        <p id="profile-title" class="text-sm font-bold text-amber-400 uppercase">Consultor Sênior</p>
+                    </div>
+                </div>
+                <p class="text-slate-300 mb-2">Você estruturou o plano da VarejoAtivo. Veja a avaliação da diretoria:</p>
+                <div id="ceo-feedback" class="bg-slate-800 p-4 rounded-lg mt-2 border-l-4 border-blue-500 italic text-slate-200">
+                    <!-- Feedback injected via JS based on score -->
+                </div>
+                <div class="mt-6 flex flex-wrap gap-4">
+                    <button onclick="copyDocument()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-copy"></i> Copiar Rascunho A3
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg font-semibold transition">
+                        Reiniciar Simulação
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview of the A3 Template -->
+            <div id="doc-content" class="doc-preview rounded-xl p-8 shadow-2xl overflow-y-auto max-h-[70vh]">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Modal for Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md w-full transform scale-95 transition-transform duration-300 relative" id="modal-content">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div id="modal-icon" class="text-4xl mb-4 text-center"></div>
+            <h3 id="modal-title" class="text-xl font-bold text-center mb-2"></h3>
+            <p id="modal-text" class="text-slate-300 mb-6 text-center leading-relaxed"></p>
+            <div class="flex justify-center">
+                <button id="modal-btn" onclick="closeModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-lg font-semibold transition">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Consultant Chatbot Widget -->
+    <div id="ai-chat-container" class="fixed bottom-4 right-4 z-40 flex flex-col items-end">
+        <div id="ai-chat-window" class="bg-slate-800 border border-slate-600 rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-96 h-[60vh] sm:h-[400px] mb-4 flex flex-col hidden opacity-0 scale-95 origin-bottom-right">
+            <div class="bg-blue-700 p-3 rounded-t-xl flex justify-between items-center text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="font-bold text-sm">Consultor IA (Gemini)</span>
+                </div>
+                <button onclick="toggleChat()" class="hover:text-slate-300"><i class="fa-solid fa-chevron-down"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3 text-sm">
+                <div class="chat-msg bg-slate-700 p-3 rounded-lg text-slate-200 border-l-4 border-blue-500">
+                    Olá! Sou seu Consultor Digital. Tem dúvidas sobre IaaS, PaaS, SaaS, ERP, CRM, LGPD ou IHC antes de tomar sua decisão? Pergunte-me!
+                </div>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-b-xl border-t border-slate-700 flex gap-2">
+                <input type="text" id="ai-chat-input" placeholder="Digite sua dúvida técnica..." class="flex-grow bg-slate-700 text-white p-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" onkeypress="if(event.key === 'Enter') askConsultant()">
+                <button onclick="askConsultant()" class="bg-blue-600 hover:bg-blue-500 text-white w-10 h-10 rounded-lg flex items-center justify-center transition">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-blue-500/50 transition-all">
+            <i class="fa-solid fa-comment-dots text-2xl"></i>
+        </button>
+    </div>
+
+    <script>
+        // --- GAME DATA & LOGIC ---
+        
+        let score = 90; // Max points (10 per phase, 9 phases)
+        let totalPhases = 9;
+        // Perfis Dinâmicos de Varejo (Fallback caso a IA demore ou offline)
+        const fallbackProfiles = [
+            { 
+                nicho: "Eletrônicos e Informática", 
+                foco: "Alta demanda na Black Friday e rastreabilidade de itens de alto valor serializados.",
+                metricas: "Faturamento: R$ 45M/ano | 1.200 acessos/min no pico",
+                legado: "E-commerce hospedado em servidor físico local (on-premise). Estoque controlado em banco SQL não integrado ao site."
+            },
+            { 
+                nicho: "Moda Fast-Fashion", 
+                foco: "Giro extremamente rápido de estoque e necessidade urgente de integração omnichannel (comprar no site, retirar na loja).",
+                metricas: "Faturamento: R$ 80M/ano | 85 Lojas Físicas",
+                legado: "Sistema de PDV desktop antigo. O E-commerce não sabe o que tem na loja física. Processo manual de conciliação noturna."
+            },
+            { 
+                nicho: "Materiais de Construção B2B/B2C", 
+                foco: "Logística de carga pesada, aprovação de crédito complexa e entregas fracionadas por cronograma de obra.",
+                metricas: "Faturamento: R$ 120M/ano | 4.500 entregas/mês",
+                legado: "Vendedores usam talões de papel para orçamentos complexos. Aprovação de descontos depende de e-mail ao diretor."
+            },
+            { 
+                nicho: "Supermercados e Perecíveis", 
+                foco: "Controle rigoroso de validade (Shelf Life), prevenção de perdas e altíssimo volume de cupons fiscais simultâneos.",
+                metricas: "Faturamento: R$ 200M/ano | +50.000 SKUs",
+                legado: "Sistemas em ilhas isoladas. A inteligência de compras é feita em planilhas do Excel pesadas que travam constantemente."
+            }
+        ];
+        let companyProfiles = [...fallbackProfiles];
+        let currentProfile = {};
+
+        // Estrutura de dados alinhada com as 10 seções do template A3
+        let documentData = {
+            diagnostico: "",
+            direcionadores: "",
+            sistemas: [],
+            cloud: [],
+            dados: [],
+            automacao: "",
+            cultura: [],
+            seguranca: [],
+            sintese: ""
+        };
+
+        const phases = [
+            {
+                id: 1,
+                character: "CEO - VarejoAtivo",
+                icon: "fa-user-tie",
+                dialogue: "Nossa operação atingiu um gargalo estrutural. Precisamos do seu diagnóstico da situação atual para abrir nosso Plano A3.",
+                options: [
+                    {
+                        text: "A) Otimizar os bancos de dados SQL locais e manter as instâncias on-premise, evitando assim os custos recorrentes (OpEx) de nuvem pública.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Visão Limitada (Destrator Técnico)",
+                        feedbackText: "Plausível em empresas pequenas, mas para a VarejoAtivo, manter on-premise não resolve o gargalo de escalabilidade que você aprenderia no Google Cloud Leader.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "B) Implementar RPA (Robotic Process Automation) na interface dos sistemas legados atuais para simular a integração entre estoque e site sem mudar a base.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Solução Paliativa",
+                        feedbackText: "RPA em cima de sistemas isolados (Silos) cria uma 'teia de aranha' técnica. A transformação digital exige a unificação da base de dados primeiro.",
+                        icon: "fa-xmark-circle text-red-500"
+                    },
+                    {
+                        text: "C) Identifica-se que sistemas isolados (P1) geram ruptura logística, e a infraestrutura local on-premise (P2) restringe o crescimento e escalabilidade do negócio.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'diagnostico',
+                            content: `Problemas Prioritários identificados (P1): Ausência de integração de dados ponta a ponta. (P2): Infraestrutura física on-premise incapaz de suportar picos (ex: Auto-scaling inexistente).`
+                        },
+                        feedbackTitle: "Diagnóstico Estratégico!",
+                        feedbackText: "Exatamente! Você mapeou as evidências do problema (silos e infra local) que justificam toda a reestruturação em nuvem.",
+                        icon: "fa-check-circle text-green-500"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                character: "Diretora de Inovação",
+                icon: "fa-lightbulb",
+                dialogue: "Considerando nosso cenário, quais devem ser os Direcionadores e Requisitos (R) da Transformação Digital para que a TI gere valor ao negócio?",
+                options: [
+                    {
+                        text: "A) Requisito (R1): Digitalizar processos garantindo Single Source of Truth (Fonte única da verdade) e Requisito (R2): Adotar infraestrutura baseada em elasticidade.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'direcionadores',
+                            content: `R1: Estabelecer fonte única de dados em tempo real (Integração). R2: Adotar infraestrutura elástica (Cloud) baseada em OpEx. Objetivo: Escalar sem gargalos operacionais.`
+                        },
+                        feedbackTitle: "Requisitos Bem Definidos!",
+                        feedbackText: "Excelente! 'Single Source of Truth' garante que estoque, vendas e logística leiam o mesmo dado. A elasticidade cobre os picos de uso.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "B) Requisito único (R1): Focar na recapacitação intensiva da equipe para utilizarem melhor as complexas planilhas locais existentes.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Erro de Foco",
+                        feedbackText: "Treinar a equipe é bom, mas treinar para usar uma tecnologia obsoleta e isolada não resolve os problemas de escalabilidade e integração.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "C) Requisito (R1): Terceirizar completamente a TI e a logística (BPO) sem alterar ou modernizar os sistemas base utilizados atualmente.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Transferência de Problema",
+                        feedbackText: "Terceirizar uma operação engessada apenas transfere a lentidão para outra empresa. O sistema (core business) precisa evoluir.",
+                        icon: "fa-xmark-circle text-red-500"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                character: "Diretora de Operações",
+                icon: "fa-gears",
+                dialogue: "Precisamos decidir sobre os Sistemas Empresariais (Seção 3). Como resolvemos o legado respeitando a boa usabilidade para o vendedor na ponta?",
+                options: [
+                    {
+                        text: "A) Adotar arquitetura SOA (Service-Oriented) pesada, com Enterprise Service Bus local, priorizando sistemas desktop para segurança do usuário.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Arquitetura Obsoleta",
+                        feedbackText: "Embora SOA tenha sido padrão no passado, não adere aos requisitos ágeis de nuvem atuais. Sistemas desktop quebram a mobilidade do vendedor.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "B) Implementar um ERP Core Cloud-native (SaaS) integrado ao CRM via APIs REST, garantindo interface mobile (Responsive) baseada em IHC.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'sistemas',
+                            content: `
+                                <tr>
+                                    <td>ERP/CRM (SaaS) + APIs</td>
+                                    <td>Centralização de Dados e Visão 360 do Cliente.</td>
+                                    <td>R1, R2</td>
+                                    <td>API RESTful / UX Mobile Native</td>
+                                </tr>`
+                        },
+                        feedbackTitle: "Arquitetura e Usabilidade!",
+                        feedbackText: "SaaS resolve o legado e as integrações API garantem o trânsito dos dados. O foco em IHC Mobile empodera o vendedor no salão de vendas.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "C) Desenvolver todos os módulos empresariais in-house (do zero) para não dependermos de plataformas prontas, mesmo que leve 3 anos.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Risco de Time-to-Market",
+                        feedbackText: "Reinventar a roda com ERPs do zero é altamente custoso e arriscado, ferindo a proposta de agilidade e transformação rápida.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                character: "Diretor de TI",
+                icon: "fa-server",
+                dialogue: "Com o crescimento e sazonalidade das vendas, qual é a Estratégia de Nuvem (Seção 4) mais indicada segundo a trilha Google Cloud Digital Leader?",
+                options: [
+                    {
+                        text: "A) Investir fortemente em CapEx montando uma Nuvem Privada (OpenStack) no datacenter atual para garantir que os dados não saiam da empresa.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Modelo Financeiro Inadequado",
+                        feedbackText: "Nuvem privada ainda requer compra de hardware (CapEx) e manutenção física constante, não resolvendo agilidade para picos de demanda.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "B) Migrar a camada transacional para Nuvem Pública utilizando serviços gerenciados (PaaS) e regras de Auto-scaling (IaaS) mitigando ociosidade.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'cloud',
+                            content: `
+                                <tr>
+                                    <td>Nuvem Pública (IaaS / PaaS)</td>
+                                    <td>Hospedagem elástica do E-commerce (Auto-scaling) / Bancos Gerenciados.</td>
+                                    <td>Migração CapEx para OpEx, alta disponibilidade.</td>
+                                </tr>`
+                        },
+                        feedbackTitle: "Excelência em Cloud!",
+                        feedbackText: "O modelo de Nuvem Pública permite Auto-scaling (escala quando precisa) pagando apenas pelo consumo (OpEx). Exatamente o conceito Google Cloud.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "C) Adotar imediatamente uma postura Multi-Cloud, distribuindo a carga de e-commerce entre 4 provedores de nuvem diferentes simultaneamente.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Complexidade Prematura",
+                        feedbackText: "Embora Multi-Cloud seja uma tendência avançada, adotar isso no estágio de modernização inicial cria uma barreira de complexidade operacional severa.",
+                        icon: "fa-xmark-circle text-red-500"
+                    }
+                ]
+            },
+            {
+                id: 5,
+                character: "Cientista de Dados",
+                icon: "fa-chart-pie",
+                dialogue: "Na Seção de Dados e Tomada de Decisão (Seção 5), como devemos desenhar a exposição dos dados para os gerentes não técnicos?",
+                options: [
+                    {
+                        text: "A) Centralizar toda a operação em um Data Lake gigantesco e orientar os gerentes a consultarem os dados brutos via queries SQL para máxima precisão.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Distanciamento do Negócio",
+                        feedbackText: "Gerentes de negócio precisam de insights rápidos, não dados brutos. Exigir SQL quebra as leis de usabilidade (Carga Cognitiva).",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "B) Implementar fluxos de processamento em lote (Batch), entregando dashboards estáticos consolidados todo dia à meia-noite (D-1).",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Atraso Operacional",
+                        feedbackText: "A transformação digital na logística/estoque exige Real-time (tempo real). Dados D-1 causam rupturas de estoque diurnas.",
+                        icon: "fa-xmark-circle text-red-500"
+                    },
+                    {
+                        text: "C) Construir um dashboard executivo focado em OKRs com dados em Near Real-Time, aplicando princípios visuais de minimização de ruído (Heurística Estética).",
+                        isCorrect: true,
+                        docData: {
+                            section: 'dados',
+                            content: `
+                                <tr>
+                                    <td>Ruptura de Estoque / SLA Entrega</td>
+                                    <td>Mede o ciclo do pedido e eficiência logística</td>
+                                    <td>Near Real-time</td>
+                                    <td>Reposição rápida baseada em dados visuais limpos (IHC).</td>
+                                </tr>`
+                        },
+                        feedbackTitle: "Visão Orientada a Dados",
+                        feedbackText: "Dashboards limpos focados em OKRs e KPIs reais diminuem a carga cognitiva e permitem ações preditivas rápidas dos gerentes.",
+                        icon: "fa-check-circle text-green-500"
+                    }
+                ]
+            },
+            {
+                id: 6,
+                character: "Head de Automação",
+                icon: "fa-code-branch",
+                dialogue: "Para Mapeamento de Valor e Automação (Seção 6), qual arquitetura de fluxo garante a melhor experiência do usuário (UX) final?",
+                options: [
+                    {
+                        text: "A) Gatilho: Venda online. Fluxo: Webhook aciona Cloud Function -> Reserva no ERP SaaS -> Notifica cliente via Push/App.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'automacao',
+                            content: `Gatilho: Pagamento Aprovado -> Integração: Cloud Function/Webhook no ERP -> Ação: Baixa imediata de estoque e Push de Tracking. Redução total de atrito humano.`
+                        },
+                        feedbackTitle: "Workflow Moderno (Event-Driven)",
+                        feedbackText: "Isso é arquitetura orientada a eventos. O processo roda de forma assíncrona, não trava o e-commerce e atualiza o usuário sem trabalho manual.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "B) Exportar todas as vendas do site em arquivo CSV a cada 3 horas, subir num FTP para o ERP ler e então liberar os pedidos.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Integração Assíncrona Legada",
+                        feedbackText: "Uso de FTP/CSV em janelas de horas é o exato oposto da transformação digital. Gera risco altíssimo de vender itens que já acabaram.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "C) Colocar um pop-up obrigatório após a compra pedindo ao cliente que preencha os dados do pedido em um sistema paralelo de controle da logística.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Quebra Brutal de UX",
+                        feedbackText: "Transferir o trabalho do sistema para o cliente é a pior violação de IHC. A automação deve ser invisível e benéfica ao consumidor.",
+                        icon: "fa-xmark-circle text-red-500"
+                    }
+                ]
+            },
+            {
+                id: 7,
+                character: "Gerente de Transição (Agile)",
+                icon: "fa-rotate",
+                dialogue: "Sobre a Transição Cultural Ágil (Seção 7). Como mitigamos o risco de implantação dos novos sistemas em nuvem na operação das lojas?",
+                options: [
+                    {
+                        text: "A) Fazer a virada de sistema (Go-Live) no formato 'Big Bang', trocando todos os sistemas em todas as filiais na mesma madrugada.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Altíssimo Risco",
+                        feedbackText: "Projetos 'Big Bang' têm taxas altíssimas de falha e resistência cultural. Se houver erro de código, a empresa inteira para.",
+                        icon: "fa-xmark-circle text-red-500"
+                    },
+                    {
+                        text: "B) Implementar por ciclos iterativos (Piloto), realizando testes A/B nas interfaces com usuários reais, adaptando antes do rollout final.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'cultura',
+                            content: `
+                                <tr>
+                                    <td>Piloto (Fase 1) / Teste A/B</td>
+                                    <td>Validar interface (IHC) em ambiente controlado e ouvir feedback.</td>
+                                    <td>Métricas de adoção orgânica antes da escala (Rollout).</td>
+                                </tr>`
+                        },
+                        feedbackTitle: "Abordagem Ágil Exemplar",
+                        feedbackText: "Métodos ágeis validam premissas com o usuário (Piloto/MVP), corrigem as falhas de IHC rapidamente e ganham a confiança da equipe gradativamente.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "C) Deixar que os sistemas sejam adotados organicamente, sem definir KPIs de sucesso do projeto e sem treinamentos ou cerimônias estruturadas.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Ausência de Gestão",
+                        feedbackText: "Ser 'Ágil' não significa não ter gestão. Transições precisam de ciclos curtos bem definidos, checkpoints e acompanhamento humano.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    }
+                ]
+            },
+            {
+                id: 8,
+                character: "Diretor de Compliance / DPO",
+                icon: "fa-shield-halved",
+                dialogue: "Com a nova estrutura (Seção 8), como garantimos Segurança da Informação, Controle de Acesso e respeito à LGPD e Ética?",
+                options: [
+                    {
+                        text: "A) Aplicar políticas rigorosas de Cloud IAM, criptografia at-rest/in-transit e mascaramento de dados sensíveis por padrão.",
+                        isCorrect: true,
+                        docData: {
+                            section: 'seguranca',
+                            content: `
+                                <tr>
+                                    <td>Vazamento de Dados / LGPD</td>
+                                    <td>Penalidades Legais e Reputacionais Graves</td>
+                                    <td>Controles Cloud IAM (Princípio do menor privilégio), Logs Auditáveis e Mascaramento PII.</td>
+                                </tr>`
+                        },
+                        feedbackTitle: "Compliance Total!",
+                        feedbackText: "IAM garante que cada pessoa veja apenas o que precisa. Criptografia protege contra vazamentos. É a base da confiança e ética em Cloud.",
+                        icon: "fa-check-circle text-green-500"
+                    },
+                    {
+                        text: "B) Focar inteiramente na segurança física perimetral (firewalls na porta da empresa), afinal a Nuvem do Google já vem 100% configurada e inviolável.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Falha no Modelo de Responsabilidade Compartilhada",
+                        feedbackText: "Na nuvem, o provedor garante a infra, mas o *cliente* é responsável por gerenciar acessos (IAM) e dados. Você deve configurar a segurança interna.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "C) Anonimizar os dados no Data Warehouse apenas, mas permitir que no CRM e aplicativos os vendedores vejam todos os clientes da rede.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Risco Prático",
+                        feedbackText: "O vazamento quase sempre ocorre na ponta. Dar acesso irrestrito a vendedores fere o princípio do Menor Privilégio e põe a LGPD em risco imediato.",
+                        icon: "fa-xmark-circle text-red-500"
+                    }
+                ]
+            },
+            {
+                id: 9,
+                character: "Conselho de Administração",
+                icon: "fa-users-rectangle",
+                dialogue: "Última Etapa (Síntese). Como este plano de arquitetura A3 se conecta com o seu App de Diagnóstico construído na aula passada (Objetos 05 e 06)?",
+                options: [
+                    {
+                        text: "A) O documento A3 é apenas teórico, não há relação com o App de Diagnóstico interativo que hospedamos no GitHub Pages.",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Desalinhamento Metodológico",
+                        feedbackText: "Os objetos de conhecimento estão conectados! Seu App de Diagnóstico é a ferramenta prática que avalia a infraestrutura e sugere exatamente as mudanças que estamos debatendo aqui.",
+                        icon: "fa-xmark-circle text-red-500"
+                    },
+                    {
+                        text: "B) O App de Diagnóstico serve apenas para coletar o nome do cliente, mas quem define a arquitetura de nuvem é exclusivamente o provedor (Google Cloud).",
+                        isCorrect: false,
+                        feedbackTitle: "⚠️ Visão Incorreta do Papel",
+                        feedbackText: "Como consultor(a), é VOCÊ quem diagnostica a maturidade do cliente através do seu App, avaliando infra, sistemas, IA e segurança.",
+                        icon: "fa-triangle-exclamation text-yellow-500"
+                    },
+                    {
+                        text: "C) As escolhas deste simulador A3 geram recomendações reais que devem ser implementadas como perguntas e resultados (Laudo) dentro do nosso próprio App de Diagnóstico (Pilar 1 a 4).",
+                        isCorrect: true,
+                        docData: {
+                            section: 'sintese',
+                            content: `O Plano A3 estabelece as bases de Nuvem (Elasticidade, SaaS) e de Negócios (LGPD, Fluxos Ágeis). O App de Diagnóstico que a equipe publicou no GitHub Pages tangibiliza essa visão, servindo como a ferramenta que avalia a maturidade da VarejoAtivo e recomenda essas tecnologias de forma automatizada.`
+                        },
+                        feedbackTitle: "Integração Prática Perfeita!",
+                        feedbackText: "Exatamente! As decisões de hoje alimentam o código que vocês criaram ontem. Tecnologia, Negócios e Desenvolvimento alinhados para resolver problemas reais.",
+                        icon: "fa-check-circle text-green-500"
+                    }
+                ]
+            }
+        ];
+
+        let currentPhaseIndex = 0;
+        let isTransitioning = false;
+
+        // --- INIT APP LOGIC ---
+        function initApp() {
+            // Força o estado inicial correto (Capa ativa, restante oculto)
+            introScreen.classList.remove('hidden');
+            briefingScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            document.getElementById('current-phase-indicator').innerText = "0";
+        }
+
+        // --- DOM ELEMENTS ---
+        const phaseIndicator = document.getElementById('current-phase-indicator');
+        const progressBar = document.getElementById('progress-bar');
+        const characterIcon = document.getElementById('character-icon');
+        const characterName = document.getElementById('character-name');
+        const dialogueText = document.getElementById('dialogue-text');
+        const optionsContainer = document.getElementById('options-container');
+        
+        // Screens
+        const introScreen = document.getElementById('intro-screen');
+        const briefingScreen = document.getElementById('briefing-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const docContent = document.getElementById('doc-content');
+        
+        // Modal elements
+        const modal = document.getElementById('feedback-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const modalBtn = document.getElementById('modal-btn');
+
+        // Chat AI elements
+        const chatWindow = document.getElementById('ai-chat-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('ai-chat-input');
+        let chatIsVisible = false;
+
+        // --- AI CONSULTANT FUNCTIONS ---
+        function toggleChat() {
+            chatIsVisible = !chatIsVisible;
+            if (chatIsVisible) {
+                chatWindow.classList.remove('hidden');
+                setTimeout(() => {
+                    chatWindow.classList.remove('opacity-0', 'scale-95');
+                    chatWindow.classList.add('opacity-100', 'scale-100');
+                    chatInput.focus();
+                }, 10);
+            } else {
+                chatWindow.classList.remove('opacity-100', 'scale-100');
+                chatWindow.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => chatWindow.classList.add('hidden'), 300);
+            }
+        }
+
+        function appendChatMsg(sender, text, classes) {
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `chat-msg bg-slate-700 p-3 rounded-lg ${classes}`;
+            div.innerHTML = `<strong>${sender}:</strong> <span class="msg-text">${text}</span>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function updateChatMsg(id, text, classes) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.className = `chat-msg bg-slate-700 p-3 rounded-lg ${classes}`;
+                el.querySelector('.msg-text').innerText = text;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        async function askConsultant() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            appendChatMsg('Você', msg, 'text-blue-300 ml-4');
+            chatInput.value = '';
+            const loadingId = appendChatMsg('IA', 'Pesquisando na base de conhecimento...', 'text-slate-400 italic mr-4');
+
+            const systemPrompt = `Você é um Consultor Digital Sênior focado em Cloud e Transformação Digital, atuando como professor/mentor. Seu objetivo é ajudar alunos do 1º ano de Ciência da Computação a entender conceitos para preencher o plano A3 da empresa fictícia VarejoAtivo. 
+            Regras: 
+            1. Seja didático, acolhedor e conciso (máximo 2 parágrafos curtos). 
+            2. Responda dúvidas sobre: Nuvem (IaaS, PaaS, SaaS), ERP, CRM, LGPD, IHC (Nielsen), APIs e Metodologias Ágeis.
+            3. NUNCA dê a resposta explícita do jogo. Apenas explique os prós e contras tecnológicos para que o aluno decida por si.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: msg }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                // Fetch to Gemini API. API Key handled by immersive runtime (leave empty string).
+                const apiKey = "";
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error("Erro na API");
+                const result = await response.json();
+                const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui formular uma resposta no momento.";
+                
+                updateChatMsg(loadingId, textResponse, 'text-slate-200 mr-4 border-l-4 border-blue-500');
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                updateChatMsg(loadingId, "Falha de conexão com a API de IA. Tente novamente.", 'text-red-400 mr-4');
+            }
+        }
+
+        // --- CORE GAME FUNCTIONS ---
+
+        async function fetchDynamicProfiles() {
+            const btnContainer = document.getElementById('intro-action-container');
+            btnContainer.innerHTML = `
+                <div class="text-blue-400 font-semibold flex items-center justify-center gap-3 py-4">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl"></i> 
+                    <span>O Gemini está gerando cenários personalizados para a VarejoAtivo...</span>
+                </div>
+            `;
+
+            const systemPrompt = `Você é um Arquiteto de Soluções de TI e Consultor de Negócios. Crie exatamente 3 perfis diferentes e inovadores para a empresa fictícia 'VarejoAtivo', atuando em ramos do varejo variados (ex: Pet Shop, Farmácias, Livrarias, Brinquedos, E-commerce de Nicho). Cada perfil deve conter obrigatoriamente:
+            - nicho: string descritiva do setor.
+            - foco: string com a principal dor de negócio/logística.
+            - metricas: string com faturamento anual fictício e volume de acessos ou lojas.
+            - legado: string descrevendo os sistemas atuais antiquados ou silos.
+            Retorne APENAS um JSON válido estruturado como um array contendo os 3 objetos.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: "Gere os 3 perfis fictícios da VarejoAtivo em formato JSON." }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { responseMimeType: "application/json" }
+            };
+
+            try {
+                const apiKey = "";
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if(!response.ok) throw new Error("Erro na API");
+                const result = await response.json();
+                const textJson = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if(textJson) {
+                    const parsed = JSON.parse(textJson);
+                    if(Array.isArray(parsed) && parsed.length > 0) {
+                        companyProfiles = parsed;
+                    }
+                }
+            } catch (e) {
+                console.log("Usando fallback de perfis devido a indisponibilidade momentânea da IA.", e);
+            }
+
+            renderProfileSelection();
+        }
+
+        function renderProfileSelection() {
+            const introContent = document.getElementById('intro-screen').querySelector('.glass-panel');
+            
+            let html = `
+                <i class="fa-solid fa-store text-5xl text-blue-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-white mb-2">Escolha o Perfil da VarejoAtivo</h2>
+                <p class="text-slate-300 text-sm mb-6">A IA gerou as seguintes opções de atuação para esta rodada. Selecione abaixo a que sua consultoria deseja diagnosticar:</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mb-6">
+            `;
+
+            companyProfiles.forEach((prof, idx) => {
+                html += `
+                    <div onclick="selectProfile(${idx})" class="bg-slate-800 border border-slate-700 hover:border-blue-500 p-5 rounded-xl cursor-pointer transition-all hover:-translate-y-1 shadow-lg group flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold bg-blue-900/50 text-blue-300 px-2 py-1 rounded">Opção ${idx + 1}</span>
+                            <h3 class="font-bold text-lg text-white mt-2 group-hover:text-blue-400 transition-colors">${prof.nicho}</h3>
+                            <p class="text-xs text-slate-300 mt-2 line-clamp-3"><strong>Foco:</strong> ${prof.foco}</p>
+                            <p class="text-[11px] text-slate-400 mt-2 italic"><strong>Métricas:</strong> ${prof.metricas}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700 text-right">
+                            <span class="text-xs text-blue-400 font-bold group-hover:underline">Selecionar Caso <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            introContent.innerHTML = html;
+        }
+
+        function selectProfile(index) {
+            currentProfile = companyProfiles[index] || companyProfiles[0];
+            
+            // Popular a UI de Briefing
+            document.getElementById('briefing-nicho').innerText = currentProfile.nicho;
+            document.getElementById('briefing-foco').innerText = currentProfile.foco;
+            document.getElementById('briefing-metricas').innerText = currentProfile.metricas;
+            document.getElementById('briefing-legado').innerText = currentProfile.legado;
+            document.getElementById('dynamic-context-display').innerText = `Missão A3: ${currentProfile.nicho}`;
+
+            // Trocar Telas
+            introScreen.classList.add('hidden');
+            briefingScreen.classList.remove('hidden');
+        }
+
+        function initGame() {
+            briefingScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            currentPhaseIndex = 0;
+            score = 90; // Reset score
+
+            // Reset doc data
+            documentData = { diagnostico: "", direcionadores: "", sistemas: [], cloud: [], dados: [], automacao: "", cultura: [], seguranca: [], sintese: "" };
+            
+            document.querySelector('.text-slate-300').innerHTML = `Fase <span id="current-phase-indicator" class="text-blue-400">1</span> de ${totalPhases}`;
+            loadPhase();
+        }
+
+        function loadPhase() {
+            const phase = phases[currentPhaseIndex];
+            
+            // Set dynamic dialogue context on phase 1
+            let currentDialogue = phase.dialogue;
+            if(phase.id === 1) {
+                currentDialogue = `Atuamos com ${currentProfile.nicho}. Nossa dor central hoje é ${currentProfile.foco}. ` + currentDialogue;
+            }
+
+            // Update UI
+            document.getElementById('current-phase-indicator').innerText = phase.id;
+            progressBar.style.width = `${((currentPhaseIndex + 1) / totalPhases) * 100}%`;
+            characterIcon.className = `fa-solid ${phase.icon} text-white`;
+            characterName.innerText = phase.character;
+            dialogueText.innerText = `"${currentDialogue}"`;
+
+            // Render Options
+            optionsContainer.innerHTML = '';
+            
+            phase.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card text-left bg-slate-800 border border-slate-700 rounded-xl p-5 text-slate-200 transition-all duration-300 w-full group';
+                btn.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 bg-slate-700 group-hover:bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 transition-colors">
+                            <span class="font-bold text-sm">${String.fromCharCode(65 + index)}</span>
+                        </div>
+                        <p class="leading-relaxed">${opt.text}</p>
+                    </div>
+                `;
+                btn.onclick = () => handleOptionClick(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleOptionClick(option) {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            // Penalty for wrong click
+            if (!option.isCorrect) {
+                score = Math.max(0, score - 5);
+            }
+
+            showModal(option);
+
+            modalBtn.onclick = () => {
+                closeModal();
+                if (option.isCorrect) {
+                    // Save data for document mapping exactly to the 10 sections
+                    if(option.docData) {
+                        const sectionKey = option.docData.section;
+                        if (Array.isArray(documentData[sectionKey])) {
+                            documentData[sectionKey].push(option.docData.content);
+                        } else {
+                            documentData[sectionKey] = option.docData.content;
+                        }
+                    }
+                    
+                    // Advance phase
+                    currentPhaseIndex++;
+                    if (currentPhaseIndex < totalPhases) {
+                        setTimeout(() => {
+                            loadPhase();
+                            isTransitioning = false;
+                        }, 300);
+                    } else {
+                        setTimeout(showResults, 300);
+                    }
+                } else {
+                    isTransitioning = false; // Let them try again
+                }
+            };
+        }
+
+        function showModal(option) {
+            modalIcon.className = `text-4xl mb-4 text-center fa-solid ${option.icon}`;
+            modalTitle.innerText = option.feedbackTitle;
+            modalText.innerText = option.feedbackText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function showResults() {
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // Set Score UI
+            const scoreDisplay = document.getElementById('final-score-display');
+            const profileTitle = document.getElementById('profile-title');
+            const ceoFeedback = document.getElementById('ceo-feedback');
+            
+            scoreDisplay.innerText = `${score}/90`;
+            
+            if(score >= 80) {
+                profileTitle.innerText = "Consultor Sênior Master 🚀";
+                profileTitle.className = "text-sm font-bold text-green-400 uppercase";
+                ceoFeedback.innerHTML = `"Trabalho impecável, equipe! Suas escolhas demonstraram domínio. Prestem atenção na <strong>seção em verde no final do documento</strong>, ela contém dicas valiosas para vocês atualizarem o código do App de Diagnóstico (hospedado no GitHub Pages) construído na aula anterior!"`;
+            } else if (score >= 50) {
+                profileTitle.innerText = "Consultor Pleno ⭐";
+                profileTitle.className = "text-sm font-bold text-amber-400 uppercase";
+                ceoFeedback.innerHTML = `"Bom projeto. Tivemos alguns tropeços, mas no fim o plano atende a A3. Usem os insumos da última seção do documento gerado para revisar e dar upgrade no App de Diagnóstico do GitHub de vocês."`;
+            } else {
+                profileTitle.innerText = "Turista Digital 😅";
+                profileTitle.className = "text-sm font-bold text-red-400 uppercase";
+                ceoFeedback.innerHTML = `"Vocês pularam etapas! O documento foi gerado, mas sugiro conversar com o Consultor IA (Gemini) ali no canto para entender melhor os conceitos antes de ir pro código do App de Diagnóstico de vocês."`;
+            }
+
+            generateDocumentView();
+        }
+
+        function generateDocumentView() {
+            const date = new Date().toLocaleDateString('pt-BR');
+            
+            // Mapeamento das seções com marcações instrucionais e Insumos para o App de Diagnóstico
+            const htmlString = `
+                <h1 style="text-align:center;">PLANO DE MODERNIZAÇÃO E TRANSFORMAÇÃO DIGITAL (Rascunho A3)</h1>
+                <h2 style="text-align:center; color:#666;">VarejoAtivo - Segmento: ${currentProfile.nicho}</h2>
+                
+                <div class="table-responsive">
+                    <table style="margin-top: 20px;">
+                        <tr><th>Equipe Consultora</th><td style="background-color: #fff3cd;">[PREENCHER NOMES DOS ALUNOS AQUI]</td></tr>
+                        <tr><th>Unidade Curricular</th><td>Exploração Digital e Fundamentos Tecnológicos</td></tr>
+                        <tr><th>Data</th><td>${date}</td></tr>
+                    </table>
+                </div>
+
+                <div style="background-color: #e2e8f0; padding: 10px; margin: 15px 0; border-left: 4px solid #3b82f6;">
+                    <strong>Dica do Consultor IA:</strong> Este documento base possui as respostas corretas do simulador. Complementem os blocos destacados em amarelo!
+                </div>
+
+                <h3>1. Diagnóstico da situação atual</h3>
+                <p>${documentData.diagnostico}</p>
+                <div style="background-color: #fff3cd; padding: 10px; margin-bottom: 15px;">[AÇÃO DA EQUIPE: Escrevam aqui, em 1 parágrafo, como a ${currentProfile.foco}]</div>
+
+                <h3>2. Direcionadores da transformação</h3>
+                <p>${documentData.direcionadores}</p>
+                
+                <h3>3. Sistemas empresariais e integração</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Sistema/Solução</th><th>Papel Proposto na VarejoAtivo</th><th>Requisitos(R)</th><th>Integração</th></tr>
+                        ${documentData.sistemas.join('') || '<tr><td colspan="4">Dados de sistemas pendentes.</td></tr>'}
+                    </table>
+                </div>
+                <div style="background-color: #fff3cd; padding: 10px; margin-bottom: 15px;">[AÇÃO DA EQUIPE: Justifiquem rapidamente como as soluções propostas quebram o silos organizacionais.]</div>
+
+                <h3>4. Estratégia e arquitetura de nuvem</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Modelo de Nuvem</th><th>Uso proposto</th><th>Benefício (Cloud Leader)</th></tr>
+                        ${documentData.cloud.join('') || '<tr><td colspan="3">Dados de cloud pendentes.</td></tr>'}
+                    </table>
+                </div>
+
+                <h3>5. Dados e tomada de decisão</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>KPI</th><th>O que mede?</th><th>Periodicidade</th><th>Decisão associada</th></tr>
+                        ${documentData.dados.join('') || '<tr><td colspan="4">Dados pendentes.</td></tr>'}
+                    </table>
+                </div>
+
+                <h3>6. Valor para o cliente e automação (Workflow)</h3>
+                <p><strong>Caminho Crítico:</strong> ${documentData.automacao}</p>
+                <div style="background-color: #fff3cd; padding: 10px; margin-bottom: 15px;">[AÇÃO DA EQUIPE: Inserir aqui a imagem do fluxo (Workflow) desenhado por vocês mostrando a ação do cliente até a entrega do produto.]</div>
+
+                <h3>7. Cultura, pessoas e transição ágil</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Fase (Metodologia)</th><th>Principais ações</th><th>Feedback/Critério</th></tr>
+                        ${documentData.cultura.join('') || '<tr><td colspan="3">Dados pendentes.</td></tr>'}
+                    </table>
+                </div>
+
+                <h3>8. Segurança, privacidade, ética e riscos</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Risco Mapeado</th><th>Possível Impacto</th><th>Controle / Solução (IAM)</th></tr>
+                        ${documentData.seguranca.join('') || '<tr><td colspan="3">Dados pendentes.</td></tr>'}
+                    </table>
+                </div>
+
+                <h3>9. Síntese integrada da proposta</h3>
+                <p>${documentData.sintese}</p>
+
+                <h3>10. Referências e uso de IA</h3>
+                <ul>
+                    <li>Trilha Google Cloud Digital Leader (Conceitos IaaS, SaaS, Cloud Identity, Auto-scaling).</li>
+                    <li>Heurísticas de Usabilidade (IHC - Jakob Nielsen).</li>
+                    <li style="background-color: #fff3cd;">[AÇÃO DA EQUIPE: Listar aqui outras IAs utilizadas (ChatGPT, Gemini) para criar os códigos e textos].</li>
+                </ul>
+
+                <!-- SEÇÃO EXCLUSIVA DE CONEXÃO COM A AULA ANTERIOR -->
+                <div style="background-color: #f0fdf4; border-left: 5px solid #16a34a; padding: 20px; margin-top: 40px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <h3 style="color: #16a34a; margin-top: 0; font-size: 1.25rem;"><i class="fa-solid fa-code-branch"></i> Insumos para Evolução do seu App de Diagnóstico (GitHub Pages)</h3>
+                    <p style="margin-bottom: 15px;">Com base nas escolhas estratégicas validadas neste simulador A3, abra o código <code>index.html</code> do App Interativo que sua equipe desenvolveu (Objetos 05 e 06) e adicione as seguintes melhorias:</p>
+                    <ul style="line-height: 1.6;">
+                        <li style="margin-bottom: 10px;"><strong>Pilar 1 (Nuvem e Infraestrutura):</strong> Adicione uma pergunta no formulário do seu App avaliando se a empresa tem <em>picos sazonais de acesso</em>. Se sim, programe o laudo do seu App para recomendar especificamente a migração para <strong>IaaS com Auto-scaling (OpEx)</strong>.</li>
+                        <li style="margin-bottom: 10px;"><strong>Pilar 2 (Sistemas e IHC):</strong> Crie uma métrica no seu App que verifique se os sistemas da empresa são <em>Mobile-Friendly</em>. Se a nota for baixa, o laudo deve recomendar a substituição do legado por um <strong>ERP em nuvem (SaaS) integrado via APIs REST</strong>.</li>
+                        <li style="margin-bottom: 10px;"><strong>Pilar 3 (IA e Automação):</strong> Garanta que seu dashboard calcule a eficiência operacional. O plano de ação gerado pelo seu código deve recomendar automações orientadas a eventos (Event-Driven) e painéis focados em <strong>OKRs em Near Real-Time</strong>.</li>
+                        <li style="margin-bottom: 10px;"><strong>Pilar 4 (LGPD e Governança):</strong> Insira um input (checkbox) no seu App sobre "Controle de Acessos". Caso não exista, seu Laudo de Boas Práticas deve alertar sobre multas e recomendar a implementação imediata de <strong>Políticas IAM e Mascaramento de Dados Sensíveis</strong>.</li>
+                    </ul>
+                    <p style="margin-top: 15px; font-weight: bold; color: #166534;">Use a IA Generativa (Gemini/ChatGPT) para gerar o código JavaScript dessas novas lógicas e faça um novo 'commit' no seu repositório!</p>
+                </div>
+            `;
+            
+            docContent.innerHTML = htmlString;
+        }
+
+        function copyDocument() {
+            // Create a range and select the doc content to preserve basic HTML formatting for Word
+            const range = document.createRange();
+            range.selectNode(docContent);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                // Execute copy
+                document.execCommand('copy');
+                // Temporary feedback on button
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Copiado com Sucesso! (Cole no Word)`;
+                btn.classList.replace('bg-blue-600', 'bg-green-600');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-blue-600');
+                    btn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+                }, 3000);
+            } catch (err) {
+                console.error('Falha ao copiar:', err);
+                alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
+            }
+            selection.removeAllRanges();
+        }
+
+        // Start game on load with Intro Screen strictly
+        window.onload = initApp;
+    </script>
+</body>
+</html>
